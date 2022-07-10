@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "SDL.h"
-#include "SDL_opengl.h"
+#include "SDL/SDL.h"
 
 #pragma comment(lib, "SDL2main")
 #pragma comment(lib, "SDL2")
