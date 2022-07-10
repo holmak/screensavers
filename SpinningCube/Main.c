@@ -79,8 +79,6 @@ int main(int argc, char *argv[])
         oglDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
     }
 
-    oglEnable(GL_TEXTURE0);
-
     for (;;)
     {
         SDL_Event ev;
