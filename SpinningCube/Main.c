@@ -14,6 +14,27 @@
 #define WINDOW_WIDTH 960
 #define WINDOW_HEIGHT 540
 
+typedef struct Vector3
+{
+    float X, Y, Z;
+} Vector3;
+
+typedef struct Color
+{
+    float R, G, B, A;
+} Color;
+
+typedef struct PackedColor
+{
+    uint8_t R, G, B, A;
+} PackedColor;
+
+typedef struct BasicVertex
+{
+    Vector3 Position;
+    PackedColor Color;
+} BasicVertex;
+
 static FILE *GLLog;
 
 void Check(bool condition)
@@ -88,6 +109,7 @@ void PrintShaderLog(
     }
 
     fflush(GLLog);
+    Check(success);
 }
 
 GLuint CompileShader(GLenum type, char *label, const char *source)
@@ -157,12 +179,12 @@ int main(int argc, char *argv[])
     // Content
     //=============================================================================================
 
-    float vertexData[] =
+    BasicVertex vertexData[] =
     {
-        -0.5f, -0.5f,
-        0.5f, -0.5f,
-        0.5f, 0.5f,
-        -0.5f, 0.5f,
+        { -0.5f, -0.5f, 0.0f, 0xFF, 0x00, 0x00, 0xFF, },
+        { 0.5f, -0.5f, 0.0f, 0x00, 0xFF, 0x00, 0xFF, },
+        { 0.5f, 0.5f, 0.0f, 0x00, 0x00, 0xFF, 0xFF, },
+        { -0.5f, 0.5f, 0.0f, 0xFF, 0xFF, 0x00, 0xFF, },
     };
 
     uint16_t indexData[] =
@@ -173,20 +195,26 @@ int main(int argc, char *argv[])
 
     const char *vertexShaderSource =
         "#version 330\n"
-        ""
-        "layout(location = 0) in vec2 fragPosition;\n"
-        ""
+        "\n"
+        "layout(location = 0) in vec3 inPosition;\n"
+        "layout(location = 1) in vec4 inColor;\n"
+        "\n"
+        "out vec4 vertColor;\n"
+        "\n"
         "void main() {\n"
-        "    gl_Position = vec4(fragPosition, 0, 1);\n"
+        "    gl_Position = vec4(inPosition, 1.0f);\n"
+        "    vertColor = inColor;\n"
         "}\n";
 
     const char *fragmentShaderSource =
         "#version 330\n"
-        ""
-        "out vec4 outputColor;\n"
-        ""
+        "\n"
+        "in vec4 vertColor;\n"
+        "\n"
+        "out vec4 fragColor;\n"
+        "\n"
         "void main() {\n"
-        "outputColor = vec4(1.0f, 1.0f, 0.0f, 0.0f);\n"
+        "    fragColor = vertColor;\n"
         "}\n";
 
     //=============================================================================================
@@ -201,6 +229,7 @@ int main(int argc, char *argv[])
     oglGenVertexArrays(1, &vao);
     oglBindVertexArray(vao);
     oglEnableVertexAttribArray(0);
+    oglEnableVertexAttribArray(1);
 
     GLuint vertexBuffer;
     oglGenBuffers(1, &vertexBuffer);
@@ -213,7 +242,8 @@ int main(int argc, char *argv[])
     oglBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexData), indexData, GL_STATIC_DRAW);
     
     // Specify vertex layout:
-    oglVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    oglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(BasicVertex), (void*)offsetof(BasicVertex, Position));
+    oglVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(BasicVertex), (void*)offsetof(BasicVertex, Color));
 
     //=============================================================================================
     // Main loop
