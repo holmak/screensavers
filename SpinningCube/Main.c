@@ -16,28 +16,28 @@
 
 typedef struct Vector3
 {
-    float X, Y, Z;
+    float x, y, z;
 } Vector3;
 
 typedef struct Color
 {
-    float R, G, B, A;
+    float r, g, b, a;
 } Color;
 
 typedef struct PackedColor
 {
-    uint8_t R, G, B, A;
+    uint8_t r, g, b, a;
 } PackedColor;
 
 typedef struct BasicVertex
 {
-    Vector3 Position;
-    PackedColor Color;
+    Vector3 position;
+    PackedColor color;
 } BasicVertex;
 
 static FILE *GLLog;
 
-void Check(bool condition)
+void check(bool condition)
 {
     if (!condition)
     {
@@ -45,7 +45,7 @@ void Check(bool condition)
     }
 }
 
-void OnGLDebugMessage(GLenum source, GLenum type, unsigned id, GLenum severity,
+void onGLDebugMessage(GLenum source, GLenum type, unsigned id, GLenum severity,
     GLsizei length, const char *message, const void *userParam)
 {
     char *sourceName = "unknown";
@@ -88,7 +88,7 @@ void OnGLDebugMessage(GLenum source, GLenum type, unsigned id, GLenum severity,
     }
 }
 
-void PrintShaderLog(
+void printShaderLog(
     GLuint object, char *label,
     GLPROC_glGetShaderiv get, GLenum status,
     GLPROC_glGetShaderInfoLog getLog)
@@ -109,28 +109,28 @@ void PrintShaderLog(
     }
 
     fflush(GLLog);
-    Check(success);
+    check(success);
 }
 
-GLuint CompileShader(GLenum type, char *label, const char *source)
+GLuint compileShader(GLenum type, char *label, const char *source)
 {
     GLuint shader = oglCreateShader(type);
     oglShaderSource(shader, 1, &source, NULL);
     oglCompileShader(shader);
-    PrintShaderLog(shader, label, oglGetShaderiv, GL_COMPILE_STATUS, oglGetShaderInfoLog);
+    printShaderLog(shader, label, oglGetShaderiv, GL_COMPILE_STATUS, oglGetShaderInfoLog);
     return shader;
 }
 
-GLuint LinkShaderProgram(GLuint vertexShader, GLuint fragmentShader)
+GLuint linkShaderProgram(GLuint vertexShader, GLuint fragmentShader)
 {
     GLuint program = oglCreateProgram();
     oglAttachShader(program, vertexShader);
     oglAttachShader(program, fragmentShader);
     oglLinkProgram(program);
-    PrintShaderLog(program, "program", oglGetProgramiv, GL_LINK_STATUS, oglGetProgramInfoLog);
+    printShaderLog(program, "program", oglGetProgramiv, GL_LINK_STATUS, oglGetProgramInfoLog);
 
     oglValidateProgram(program);
-    PrintShaderLog(program, "program validation", oglGetProgramiv, GL_VALIDATE_STATUS, oglGetProgramInfoLog);
+    printShaderLog(program, "program validation", oglGetProgramiv, GL_VALIDATE_STATUS, oglGetProgramInfoLog);
 
     oglDetachShader(program, vertexShader);
     oglDeleteShader(vertexShader);
@@ -142,7 +142,7 @@ GLuint LinkShaderProgram(GLuint vertexShader, GLuint fragmentShader)
 
 int main(int argc, char *argv[])
 {
-    Check(SDL_Init(SDL_INIT_EVERYTHING) == 0);
+    check(SDL_Init(SDL_INIT_EVERYTHING) == 0);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
     if (DEBUG_GRAPHICS)
     {
         GLLog = fopen("gl.log", "w");
-        Check(GLLog);
+        check(GLLog);
 
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
     }
@@ -160,18 +160,18 @@ int main(int argc, char *argv[])
         "Screensaver",
         SDL_WINDOWPOS_CENTERED_DISPLAY(1), SDL_WINDOWPOS_CENTERED_DISPLAY(1),
         WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL);
-    Check(window != NULL);
+    check(window != NULL);
 
     SDL_GLContext context = SDL_GL_CreateContext(window);
-    Check(context != 0);
+    check(context != 0);
     LoadGL();
-    Check(SDL_GL_SetSwapInterval(-1) == 0);
+    check(SDL_GL_SetSwapInterval(-1) == 0);
 
     if (DEBUG_GRAPHICS)
     {
         oglEnable(GL_DEBUG_OUTPUT);
         oglEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        oglDebugMessageCallback(OnGLDebugMessage, NULL);
+        oglDebugMessageCallback(onGLDebugMessage, NULL);
         oglDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
     }
 
@@ -221,9 +221,9 @@ int main(int argc, char *argv[])
     // Create GL resources
     //=============================================================================================
 
-    GLuint vertexShader = CompileShader(GL_VERTEX_SHADER, "vertex shader", vertexShaderSource);
-    GLuint fragmentShader = CompileShader(GL_FRAGMENT_SHADER, "fragment shader", fragmentShaderSource);
-    GLuint program = LinkShaderProgram(vertexShader, fragmentShader);
+    GLuint vertexShader = compileShader(GL_VERTEX_SHADER, "vertex shader", vertexShaderSource);
+    GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, "fragment shader", fragmentShaderSource);
+    GLuint program = linkShaderProgram(vertexShader, fragmentShader);
 
     GLuint vao;
     oglGenVertexArrays(1, &vao);
@@ -242,8 +242,8 @@ int main(int argc, char *argv[])
     oglBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexData), indexData, GL_STATIC_DRAW);
     
     // Specify vertex layout:
-    oglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(BasicVertex), (void*)offsetof(BasicVertex, Position));
-    oglVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(BasicVertex), (void*)offsetof(BasicVertex, Color));
+    oglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(BasicVertex), (void*)offsetof(BasicVertex, position));
+    oglVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(BasicVertex), (void*)offsetof(BasicVertex, color));
 
     //=============================================================================================
     // Main loop
