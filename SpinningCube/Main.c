@@ -250,6 +250,7 @@ int main(int argc, char *argv[])
         "#version 330\n"
         "\n"
         "uniform mat4 uniProjection;\n"
+        "uniform mat4 uniModelTransform;\n"
         "\n"
         "layout(location = 0) in vec3 inPosition;\n"
         "layout(location = 1) in vec4 inColor;\n"
@@ -257,7 +258,7 @@ int main(int argc, char *argv[])
         "out vec4 vertColor;\n"
         "\n"
         "void main() {\n"
-        "    gl_Position = uniProjection * vec4(inPosition, 1.0f);\n"
+        "    gl_Position = uniProjection * uniModelTransform * vec4(inPosition, 1.0f);\n"
         "    vertColor = inColor;\n"
         "}\n";
 
@@ -280,6 +281,7 @@ int main(int argc, char *argv[])
     GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, "fragment shader", fragmentShaderSource);
     GLuint program = linkShaderProgram(vertexShader, fragmentShader);
     GLuint uniformProjection = oglGetUniformLocation(program, "uniProjection");
+    GLuint uniformModelTransform = oglGetUniformLocation(program, "uniModelTransform");
 
     GLuint vao;
     oglGenVertexArrays(1, &vao);
@@ -325,10 +327,11 @@ int main(int argc, char *argv[])
 
         oglUseProgram(program);
         
-        Matrix4 projection = matrixRotationZ(angle);
-        projection = matrixPerspective(0.1f, 60.0f * TO_RADIANS);
+        Matrix4 projection = matrixPerspective(0.1f, 60.0f * TO_RADIANS);
+        Matrix4 modelTransform = matrixRotationZ(angle);
 
         oglUniformMatrix4fv(uniformProjection, 1, GL_TRUE, projection.e);
+        oglUniformMatrix4fv(uniformModelTransform, 1, GL_TRUE, modelTransform.e);
         oglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 
         SDL_GL_SwapWindow(window);
