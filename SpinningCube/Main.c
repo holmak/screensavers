@@ -55,6 +55,13 @@ void check(bool condition)
     }
 }
 
+void *xalloc(size_t size)
+{
+    void *p = calloc(1, size);
+    check(p != NULL);
+    return p;
+}
+
 void onGLDebugMessage(GLenum source, GLenum type, unsigned id, GLenum severity,
     GLsizei length, const char *message, const void *userParam)
 {
@@ -239,6 +246,19 @@ Matrix4 matrixScaleUniform(float s)
     return m;
 }
 
+char *readTextFile(char *path)
+{
+    FILE *f = fopen(path, "rb");
+    check(fseek(f, 0, SEEK_END) == 0);
+    long len = ftell(f);
+    check(len >= 0);
+    check(fseek(f, 0, SEEK_SET) == 0);
+    char *text = xalloc(len + 1);
+    check(fread(text, len, 1, f) == 1);
+    text[len] = '\0';
+    return text;
+}
+
 int main(int argc, char *argv[])
 {
     UNUSED(argc);
@@ -306,32 +326,8 @@ int main(int argc, char *argv[])
         2, 3, 7, 2, 7, 6, // top
     };
 
-    const char *vertexShaderSource =
-        "#version 330\n"
-        "\n"
-        "uniform mat4 uniProjection;\n"
-        "uniform mat4 uniModelTransform;\n"
-        "\n"
-        "layout(location = 0) in vec3 inPosition;\n"
-        "layout(location = 1) in vec4 inColor;\n"
-        "\n"
-        "out vec4 vertColor;\n"
-        "\n"
-        "void main() {\n"
-        "    gl_Position = uniProjection * uniModelTransform * vec4(inPosition, 1.0f);\n"
-        "    vertColor = inColor;\n"
-        "}\n";
-
-    const char *fragmentShaderSource =
-        "#version 330\n"
-        "\n"
-        "in vec4 vertColor;\n"
-        "\n"
-        "out vec4 fragColor;\n"
-        "\n"
-        "void main() {\n"
-        "    fragColor = vertColor;\n"
-        "}\n";
+    char *vertexShaderSource = readTextFile("assets/shaders/cube.v.glsl");
+    char *fragmentShaderSource = readTextFile("assets/shaders/cube.f.glsl");
 
     //=============================================================================================
     // Create GL resources
