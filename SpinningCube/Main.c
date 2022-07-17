@@ -152,6 +152,29 @@ GLuint linkShaderProgram(GLuint vertexShader, GLuint fragmentShader)
     return program;
 }
 
+float *matrixElement(Matrix4 *matrix, int row, int column)
+{
+    return matrix->e + column * 4 + row;
+}
+
+Matrix4 matrixMultiply(Matrix4 left, Matrix4 right)
+{
+    Matrix4 m;
+    for (int col = 0; col < 4; col++)
+    {
+        for (int row = 0; row < 4; row++)
+        {
+            float elem = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                elem += *matrixElement(&left, row, i) * *matrixElement(&right, i, col);
+            }
+            *matrixElement(&m, row, col) = elem;
+        }
+    }
+    return m;
+}
+
 Matrix4 matrixPixelPerfect()
 {
     Matrix4 m = {
@@ -187,6 +210,11 @@ Matrix4 matrixTranslation(Vector3 v)
     return m;
 }
 
+Matrix4 matrixTranslationF(float x, float y, float z)
+{
+    return matrixTranslation((Vector3){ x, y, z });
+}
+
 Matrix4 matrixRotationZ(float radians)
 {
     float sinx = (float)sin(radians);
@@ -195,6 +223,17 @@ Matrix4 matrixRotationZ(float radians)
         cosx, -sinx, 0, 0,
         sinx, cosx, 0, 0,
         0, 0, 1, 0,
+        0, 0, 0, 1,
+    };
+    return m;
+}
+
+Matrix4 matrixScaleUniform(float s)
+{
+    Matrix4 m = {
+        s, 0, 0, 0,
+        0, s, 0, 0,
+        0, 0, s, 0,
         0, 0, 0, 1,
     };
     return m;
@@ -347,10 +386,11 @@ int main(int argc, char *argv[])
         oglClear(GL_COLOR_BUFFER_BIT);
 
         oglUseProgram(program);
-        
+
         Matrix4 projection = matrixPerspective(0.1f, 60.0f * TO_RADIANS);
-        Matrix4 modelTransform = matrixRotationZ(angle);
-        modelTransform = matrixTranslation((Vector3){ 0, 0, -5 });
+        Matrix4 modelTransform = matrixMultiply(
+            matrixTranslationF(0, 0, -5),
+            matrixRotationZ(angle));
 
         oglUniformMatrix4fv(uniformProjection, 1, GL_TRUE, projection.e);
         oglUniformMatrix4fv(uniformModelTransform, 1, GL_TRUE, modelTransform.e);
