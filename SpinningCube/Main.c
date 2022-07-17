@@ -1,4 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -9,17 +10,23 @@
 #pragma comment(lib, "SDL2")
 #pragma comment(lib, "opengl32")
 
+#define WINDOW_WIDTH 1600
+#define WINDOW_HEIGHT 900
 #define DEBUG_GRAPHICS true
 
-#define WINDOW_WIDTH 960
-#define WINDOW_HEIGHT 540
-
+#define TO_RADIANS (float)(M_PI / 180.0)
+#define FRAME_TIME (1 / 60.0f)
 #define UNUSED(var) (void)(var)
 
 typedef struct Vector3
 {
     float x, y, z;
 } Vector3;
+
+typedef struct Matrix4
+{
+    float e[16];
+} Matrix4;
 
 typedef struct Color
 {
@@ -144,6 +151,43 @@ GLuint linkShaderProgram(GLuint vertexShader, GLuint fragmentShader)
     return program;
 }
 
+Matrix4 matrixPixelPerfect()
+{
+    Matrix4 m = {
+        2.0f / WINDOW_WIDTH, 0, 0, -1,
+        0, 2.0f / WINDOW_HEIGHT, 0, -1,
+        0, 0, -0.001f, 0,
+        0, 0, 0, 1,
+    };
+    return m;
+}
+
+Matrix4 matrixPerspective(float near, float fov)
+{
+    float e = 1 / (float)tan(fov / 2);
+    float a = (float)WINDOW_HEIGHT / WINDOW_WIDTH;
+    Matrix4 m = {
+        e, 0, 0, 0,
+        0, e / a, 0, 0,
+        0, 0, -1, -2 * near,
+        0, 0, -1, 0,
+    };
+    return m;
+}
+
+Matrix4 matrixRotationZ(float radians)
+{
+    float sinx = (float)sin(radians);
+    float cosx = (float)cos(radians);
+    Matrix4 m = {
+        cosx, -sinx, 0, 0,
+        sinx, cosx, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1,
+    };
+    return m;
+}
+
 int main(int argc, char *argv[])
 {
     UNUSED(argc);
@@ -182,16 +226,18 @@ int main(int argc, char *argv[])
         oglDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
     }
 
+    oglDisable(GL_CULL_FACE);
+
     //=============================================================================================
     // Content
     //=============================================================================================
 
     BasicVertex vertexData[] =
     {
-        { -0.5f, -0.5f, 0.0f, 0xFF, 0x00, 0x00, 0xFF, },
-        { 0.5f, -0.5f, 0.0f, 0x00, 0xFF, 0x00, 0xFF, },
-        { 0.5f, 0.5f, 0.0f, 0x00, 0x00, 0xFF, 0xFF, },
-        { -0.5f, 0.5f, 0.0f, 0xFF, 0xFF, 0x00, 0xFF, },
+        { -0.5f, -0.5f, -5.0f, 0xFF, 0x00, 0x00, 0xFF, },
+        { 0.5f, -0.5f, -5.0f, 0x00, 0xFF, 0x00, 0xFF, },
+        { 0.5f, 0.5f, -5.0f, 0x00, 0x00, 0xFF, 0xFF, },
+        { -0.5f, 0.5f, -5.0f, 0xFF, 0xFF, 0x00, 0xFF, },
     };
 
     uint16_t indexData[] =
@@ -203,13 +249,15 @@ int main(int argc, char *argv[])
     const char *vertexShaderSource =
         "#version 330\n"
         "\n"
+        "uniform mat4 uniProjection;\n"
+        "\n"
         "layout(location = 0) in vec3 inPosition;\n"
         "layout(location = 1) in vec4 inColor;\n"
         "\n"
         "out vec4 vertColor;\n"
         "\n"
         "void main() {\n"
-        "    gl_Position = vec4(inPosition, 1.0f);\n"
+        "    gl_Position = uniProjection * vec4(inPosition, 1.0f);\n"
         "    vertColor = inColor;\n"
         "}\n";
 
@@ -231,6 +279,7 @@ int main(int argc, char *argv[])
     GLuint vertexShader = compileShader(GL_VERTEX_SHADER, "vertex shader", vertexShaderSource);
     GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, "fragment shader", fragmentShaderSource);
     GLuint program = linkShaderProgram(vertexShader, fragmentShader);
+    GLuint uniformProjection = oglGetUniformLocation(program, "uniProjection");
 
     GLuint vao;
     oglGenVertexArrays(1, &vao);
@@ -256,6 +305,8 @@ int main(int argc, char *argv[])
     // Main loop
     //=============================================================================================
 
+    float angle = 0;
+
     for (;;)
     {
         SDL_Event ev;
@@ -267,10 +318,17 @@ int main(int argc, char *argv[])
             }
         }
 
+        angle += FRAME_TIME;
+
         oglClearColor(0.5f, 0.5f, 1.0f, 0.0f);
         oglClear(GL_COLOR_BUFFER_BIT);
 
         oglUseProgram(program);
+        
+        Matrix4 projection = matrixRotationZ(angle);
+        projection = matrixPerspective(0.1f, 60.0f * TO_RADIANS);
+
+        oglUniformMatrix4fv(uniformProjection, 1, GL_TRUE, projection.e);
         oglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 
         SDL_GL_SwapWindow(window);
