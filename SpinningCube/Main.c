@@ -50,7 +50,6 @@ void check(bool condition)
 void onGLDebugMessage(GLenum source, GLenum type, unsigned id, GLenum severity,
     GLsizei length, const char *message, const void *userParam)
 {
-    UNUSED(id);
     UNUSED(length);
     UNUSED(userParam);
 
@@ -84,7 +83,7 @@ void onGLDebugMessage(GLenum source, GLenum type, unsigned id, GLenum severity,
     case GL_DEBUG_SEVERITY_NOTIFICATION: severityName = "notice"; break;
     }
 
-    fprintf(GLLog, "[%s | %s | %s] %s\n", severityName, typeName, sourceName, message);
+    fprintf(GLLog, "[%s | %s | %s | %u] %s\n", severityName, typeName, sourceName, id, message);
     fflush(GLLog);
 
     // Break when a serious error occurs:
