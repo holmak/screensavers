@@ -17,6 +17,7 @@
 #define TO_RADIANS (float)(M_PI / 180.0)
 #define FRAME_TIME (1 / 60.0f)
 #define UNUSED(var) (void)(var)
+#define COUNTOF(a) (sizeof(a) / sizeof(a[0]))
 
 typedef struct Vector3
 {
@@ -175,6 +176,17 @@ Matrix4 matrixPerspective(float near, float fov)
     return m;
 }
 
+Matrix4 matrixTranslation(Vector3 v)
+{
+    Matrix4 m = {
+        1, 0, 0, v.x,
+        0, 1, 0, v.y,
+        0, 0, 1, v.z,
+        0, 0, 0, 1,
+    };
+    return m;
+}
+
 Matrix4 matrixRotationZ(float radians)
 {
     float sinx = (float)sin(radians);
@@ -226,7 +238,8 @@ int main(int argc, char *argv[])
         oglDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
     }
 
-    oglDisable(GL_CULL_FACE);
+    //oglEnable(GL_CULL_FACE);
+    oglCullFace(GL_BACK);
 
     //=============================================================================================
     // Content
@@ -234,16 +247,24 @@ int main(int argc, char *argv[])
 
     BasicVertex vertexData[] =
     {
-        { -0.5f, -0.5f, -5.0f, 0xFF, 0x00, 0x00, 0xFF, },
-        { 0.5f, -0.5f, -5.0f, 0x00, 0xFF, 0x00, 0xFF, },
-        { 0.5f, 0.5f, -5.0f, 0x00, 0x00, 0xFF, 0xFF, },
-        { -0.5f, 0.5f, -5.0f, 0xFF, 0xFF, 0x00, 0xFF, },
+        { -1, -1, -1, 0x00, 0x00, 0x00, 0xFF, },
+        { +1, -1, -1, 0xFF, 0x00, 0x00, 0xFF, },
+        { -1, +1, -1, 0x00, 0xFF, 0x00, 0xFF, },
+        { +1, +1, -1, 0xFF, 0xFF, 0x00, 0xFF, },
+        { -1, -1, +1, 0x00, 0x00, 0xFF, 0xFF, },
+        { +1, -1, +1, 0xFF, 0x00, 0xFF, 0xFF, },
+        { -1, +1, +1, 0x00, 0xFF, 0xFF, 0xFF, },
+        { +1, +1, +1, 0xFF, 0xFF, 0xFF, 0xFF, },
     };
 
     uint16_t indexData[] =
     {
-        0, 1, 2,
-        0, 2, 3,
+        0, 1, 3, 0, 3, 2, // front
+        1, 5, 7, 1, 7, 3, // right
+        5, 4, 6, 5, 6, 7, // back
+        4, 0, 2, 4, 2, 6, // left
+        1, 0, 4, 1, 4, 5, // bottom
+        2, 3, 7, 2, 7, 6, // top
     };
 
     const char *vertexShaderSource =
@@ -329,10 +350,11 @@ int main(int argc, char *argv[])
         
         Matrix4 projection = matrixPerspective(0.1f, 60.0f * TO_RADIANS);
         Matrix4 modelTransform = matrixRotationZ(angle);
+        modelTransform = matrixTranslation((Vector3){ 0, 0, -5 });
 
         oglUniformMatrix4fv(uniformProjection, 1, GL_TRUE, projection.e);
         oglUniformMatrix4fv(uniformModelTransform, 1, GL_TRUE, modelTransform.e);
-        oglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+        oglDrawElements(GL_TRIANGLES, COUNTOF(indexData), GL_UNSIGNED_SHORT, 0);
 
         SDL_GL_SwapWindow(window);
     }
