@@ -14,6 +14,8 @@
 #define WINDOW_WIDTH 960
 #define WINDOW_HEIGHT 540
 
+#define UNUSED(var) (void)(var)
+
 typedef struct Vector3
 {
     float x, y, z;
@@ -48,6 +50,10 @@ void check(bool condition)
 void onGLDebugMessage(GLenum source, GLenum type, unsigned id, GLenum severity,
     GLsizei length, const char *message, const void *userParam)
 {
+    UNUSED(id);
+    UNUSED(length);
+    UNUSED(userParam);
+
     char *sourceName = "unknown";
     char *typeName = "unknown";
     char *severityName = "unknown";
@@ -84,7 +90,6 @@ void onGLDebugMessage(GLenum source, GLenum type, unsigned id, GLenum severity,
     // Break when a serious error occurs:
     if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
     {
-        bool breakpoint = true;
     }
 }
 
@@ -93,7 +98,7 @@ void printShaderLog(
     GLPROC_glGetShaderiv get, GLenum status,
     GLPROC_glGetShaderInfoLog getLog)
 {
-    GLuint success;
+    GLint success;
     get(object, status, &success);
     if (!success)
     {
@@ -142,6 +147,9 @@ GLuint linkShaderProgram(GLuint vertexShader, GLuint fragmentShader)
 
 int main(int argc, char *argv[])
 {
+    UNUSED(argc);
+    UNUSED(argv);
+
     check(SDL_Init(SDL_INIT_EVERYTHING) == 0);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -268,6 +276,4 @@ int main(int argc, char *argv[])
 
         SDL_GL_SwapWindow(window);
     }
-
-    return 0;
 }
