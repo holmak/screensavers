@@ -14,7 +14,8 @@
 #define WINDOW_HEIGHT 900
 #define DEBUG_GRAPHICS true
 
-#define TO_RADIANS (float)(M_PI / 180.0)
+#define PI ((float)M_PI)
+#define TO_RADIANS (PI / 180.0f)
 #define FRAME_TIME (1 / 60.0f)
 #define UNUSED(var) (void)(var)
 #define COUNTOF(a) (sizeof(a) / sizeof(a[0]))
@@ -222,6 +223,32 @@ Matrix4 matrixTranslationF(float x, float y, float z)
     return matrixTranslation((Vector3){ x, y, z });
 }
 
+Matrix4 matrixRotationX(float radians)
+{
+    float sinx = (float)sin(radians);
+    float cosx = (float)cos(radians);
+    Matrix4 m = {
+        1, 0, 0, 0,
+        0, cosx, -sinx, 0,
+        0, sinx, cosx, 0,
+        0, 0, 0, 1,
+    };
+    return m;
+}
+
+Matrix4 matrixRotationY(float radians)
+{
+    float sinx = (float)sin(radians);
+    float cosx = (float)cos(radians);
+    Matrix4 m = {
+        cosx, 0, sinx, 0,
+        0, 1, 0, 0,
+        -sinx, 0, cosx, 0,
+        0, 0, 0, 1,
+    };
+    return m;
+}
+
 Matrix4 matrixRotationZ(float radians)
 {
     float sinx = (float)sin(radians);
@@ -301,6 +328,8 @@ int main(int argc, char *argv[])
         oglDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
     }
 
+    oglEnable(GL_DEPTH_TEST);
+    oglDepthFunc(GL_LEQUAL);
     //oglEnable(GL_CULL_FACE);
     oglCullFace(GL_BACK);
 
@@ -381,16 +410,19 @@ int main(int argc, char *argv[])
         }
 
         angle += FRAME_TIME;
+        angle = fmodf(angle, 2 * PI);
 
         oglClearColor(0.5f, 0.5f, 1.0f, 0.0f);
-        oglClear(GL_COLOR_BUFFER_BIT);
+        oglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         oglUseProgram(program);
 
         Matrix4 projection = matrixPerspective(0.1f, 60.0f * TO_RADIANS);
         Matrix4 modelTransform = matrixMultiply(
-            matrixTranslationF(0, 0, -5),
-            matrixRotationZ(angle));
+            matrixMultiply(
+                matrixRotationX(angle),
+                matrixRotationY(2 * angle)),
+            matrixTranslationF(0, 0, -5));
 
         oglUniformMatrix4fv(uniformProjection, 1, GL_TRUE, projection.e);
         oglUniformMatrix4fv(uniformModelTransform, 1, GL_TRUE, modelTransform.e);
