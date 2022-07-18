@@ -10,8 +10,8 @@
 #pragma comment(lib, "SDL2")
 #pragma comment(lib, "opengl32")
 
-#define WINDOW_WIDTH 1600
-#define WINDOW_HEIGHT 900
+#define WINDOW_WIDTH 1920
+#define WINDOW_HEIGHT 1080
 #define DEBUG_GRAPHICS true
 
 #define PI ((float)M_PI)
@@ -312,7 +312,7 @@ int main(int argc, char *argv[])
     SDL_Window *window = SDL_CreateWindow(
         "Screensaver",
         SDL_WINDOWPOS_CENTERED_DISPLAY(1), SDL_WINDOWPOS_CENTERED_DISPLAY(1),
-        WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL);
+        WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP);
     check(window != NULL);
 
     SDL_GLContext context = SDL_GL_CreateContext(window);
