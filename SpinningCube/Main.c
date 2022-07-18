@@ -422,7 +422,7 @@ int main(int argc, char *argv[])
             matrixMultiply(
                 matrixRotationX(angle),
                 matrixRotationY(2 * angle)),
-            matrixTranslationF(0, 0, -5));
+            matrixTranslationF(0, 0, -6));
 
         oglUniformMatrix4fv(uniformProjection, 1, GL_TRUE, projection.e);
         oglUniformMatrix4fv(uniformModelTransform, 1, GL_TRUE, modelTransform.e);
