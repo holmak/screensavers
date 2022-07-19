@@ -90,10 +90,12 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Cube.c" />
     <ClCompile Include="GL.c" />
     <ClCompile Include="Main.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Common.h" />
     <ClInclude Include="GL.h" />
     <ClInclude Include="khrplatform.h" />
   </ItemGroup>

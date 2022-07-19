@@ -1,52 +1,15 @@
-#define _CRT_SECURE_NO_WARNINGS
-#include <math.h>
-#include <stdbool.h>
-#include <stdint.h>
+#include "Common.h"
 #include <stdio.h>
-#include "SDL/SDL.h"
-#include "GL.h"
 
 #pragma comment(lib, "SDL2main")
 #pragma comment(lib, "SDL2")
 #pragma comment(lib, "opengl32")
 
-#define WINDOW_WIDTH 1920
-#define WINDOW_HEIGHT 1080
-#define DEBUG_GRAPHICS true
-
-#define PI ((float)M_PI)
-#define TO_RADIANS (PI / 180.0f)
-#define FRAME_TIME (1 / 60.0f)
-#define UNUSED(var) (void)(var)
-#define COUNTOF(a) (sizeof(a) / sizeof(a[0]))
-
-typedef struct Vector3
-{
-    float x, y, z;
-} Vector3;
-
-typedef struct Matrix4
-{
-    float e[16];
-} Matrix4;
-
-typedef struct Color
-{
-    float r, g, b, a;
-} Color;
-
-typedef struct PackedColor
-{
-    uint8_t r, g, b, a;
-} PackedColor;
-
-typedef struct BasicVertex
-{
-    Vector3 position;
-    PackedColor color;
-} BasicVertex;
-
 static FILE *GLLog;
+
+//=============================================================================================
+// Basics
+//=============================================================================================
 
 void check(bool condition)
 {
@@ -63,50 +26,22 @@ void *xalloc(size_t size)
     return p;
 }
 
-void onGLDebugMessage(GLenum source, GLenum type, unsigned id, GLenum severity,
-    GLsizei length, const char *message, const void *userParam)
+char *readTextFile(char *path)
 {
-    UNUSED(length);
-    UNUSED(userParam);
-
-    char *sourceName = "unknown";
-    char *typeName = "unknown";
-    char *severityName = "unknown";
-
-    switch (source)
-    {
-    case GL_DEBUG_SOURCE_API: sourceName = "API"; break;
-    case GL_DEBUG_SOURCE_WINDOW_SYSTEM: sourceName = "window system"; break;
-    case GL_DEBUG_SOURCE_SHADER_COMPILER: sourceName = "shader compiler"; break;
-    case GL_DEBUG_SOURCE_OTHER: sourceName = "other"; break;
-    }
-
-    switch (type)
-    {
-    case GL_DEBUG_TYPE_ERROR: typeName = "error"; break;
-    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: typeName = "deprecated behavior"; break;
-    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: typeName = "undefined behavior"; break;
-    case GL_DEBUG_TYPE_PORTABILITY: typeName = "portability"; break;
-    case GL_DEBUG_TYPE_PERFORMANCE: typeName = "performance"; break;
-    case GL_DEBUG_TYPE_OTHER: typeName = "other"; break;
-    }
-
-    switch (severity)
-    {
-    case GL_DEBUG_SEVERITY_HIGH: severityName = "high"; break;
-    case GL_DEBUG_SEVERITY_MEDIUM: severityName = "medium"; break;
-    case GL_DEBUG_SEVERITY_LOW: severityName = "low"; break;
-    case GL_DEBUG_SEVERITY_NOTIFICATION: severityName = "notice"; break;
-    }
-
-    fprintf(GLLog, "[%s | %s | %s | %u] %s\n", severityName, typeName, sourceName, id, message);
-    fflush(GLLog);
-
-    // Break when a serious error occurs:
-    if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
-    {
-    }
+    FILE *f = fopen(path, "rb");
+    check(fseek(f, 0, SEEK_END) == 0);
+    long len = ftell(f);
+    check(len >= 0);
+    check(fseek(f, 0, SEEK_SET) == 0);
+    char *text = xalloc(len + 1);
+    check(fread(text, len, 1, f) == 1);
+    text[len] = '\0';
+    return text;
 }
+
+//=============================================================================================
+// GL
+//=============================================================================================
 
 void printShaderLog(
     GLuint object, char *label,
@@ -158,6 +93,13 @@ GLuint linkShaderProgram(GLuint vertexShader, GLuint fragmentShader)
     oglDeleteShader(fragmentShader);
 
     return program;
+}
+
+GLuint compileShaderProgram(char *vertexShaderSource, char *fragmentShaderSource)
+{
+    GLuint vs = compileShader(GL_VERTEX_SHADER, "vertex shader", vertexShaderSource);
+    GLuint fs = compileShader(GL_FRAGMENT_SHADER, "fragment shader", fragmentShaderSource);
+    return linkShaderProgram(vs, fs);
 }
 
 float *matrixElement(Matrix4 *matrix, int row, int column)
@@ -273,17 +215,53 @@ Matrix4 matrixScaleUniform(float s)
     return m;
 }
 
-char *readTextFile(char *path)
+//=============================================================================================
+// Main program
+//=============================================================================================
+
+void onGLDebugMessage(GLenum source, GLenum type, unsigned id, GLenum severity,
+    GLsizei length, const char *message, const void *userParam)
 {
-    FILE *f = fopen(path, "rb");
-    check(fseek(f, 0, SEEK_END) == 0);
-    long len = ftell(f);
-    check(len >= 0);
-    check(fseek(f, 0, SEEK_SET) == 0);
-    char *text = xalloc(len + 1);
-    check(fread(text, len, 1, f) == 1);
-    text[len] = '\0';
-    return text;
+    UNUSED(length);
+    UNUSED(userParam);
+
+    char *sourceName = "unknown";
+    char *typeName = "unknown";
+    char *severityName = "unknown";
+
+    switch (source)
+    {
+    case GL_DEBUG_SOURCE_API: sourceName = "API"; break;
+    case GL_DEBUG_SOURCE_WINDOW_SYSTEM: sourceName = "window system"; break;
+    case GL_DEBUG_SOURCE_SHADER_COMPILER: sourceName = "shader compiler"; break;
+    case GL_DEBUG_SOURCE_OTHER: sourceName = "other"; break;
+    }
+
+    switch (type)
+    {
+    case GL_DEBUG_TYPE_ERROR: typeName = "error"; break;
+    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: typeName = "deprecated behavior"; break;
+    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: typeName = "undefined behavior"; break;
+    case GL_DEBUG_TYPE_PORTABILITY: typeName = "portability"; break;
+    case GL_DEBUG_TYPE_PERFORMANCE: typeName = "performance"; break;
+    case GL_DEBUG_TYPE_OTHER: typeName = "other"; break;
+    }
+
+    switch (severity)
+    {
+    case GL_DEBUG_SEVERITY_HIGH: severityName = "high"; break;
+    case GL_DEBUG_SEVERITY_MEDIUM: severityName = "medium"; break;
+    case GL_DEBUG_SEVERITY_LOW: severityName = "low"; break;
+    case GL_DEBUG_SEVERITY_NOTIFICATION: severityName = "notice"; break;
+    }
+
+    fprintf(GLLog, "[%s | %s | %s | %u] %s\n", severityName, typeName, sourceName, id, message);
+    fflush(GLLog);
+
+    // Break when a serious error occurs:
+    if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
+    {
+    }
 }
 
 int main(int argc, char *argv[])
@@ -330,73 +308,6 @@ int main(int argc, char *argv[])
 
     oglEnable(GL_DEPTH_TEST);
     oglDepthFunc(GL_LEQUAL);
-    //oglEnable(GL_CULL_FACE);
-    oglCullFace(GL_BACK);
-
-    //=============================================================================================
-    // Content
-    //=============================================================================================
-
-    BasicVertex vertexData[] =
-    {
-        { -1, -1, -1, 0x00, 0x00, 0x00, 0xFF, },
-        { +1, -1, -1, 0xFF, 0x00, 0x00, 0xFF, },
-        { -1, +1, -1, 0x00, 0xFF, 0x00, 0xFF, },
-        { +1, +1, -1, 0xFF, 0xFF, 0x00, 0xFF, },
-        { -1, -1, +1, 0x00, 0x00, 0xFF, 0xFF, },
-        { +1, -1, +1, 0xFF, 0x00, 0xFF, 0xFF, },
-        { -1, +1, +1, 0x00, 0xFF, 0xFF, 0xFF, },
-        { +1, +1, +1, 0xFF, 0xFF, 0xFF, 0xFF, },
-    };
-
-    uint16_t indexData[] =
-    {
-        0, 1, 3, 0, 3, 2, // front
-        1, 5, 7, 1, 7, 3, // right
-        5, 4, 6, 5, 6, 7, // back
-        4, 0, 2, 4, 2, 6, // left
-        1, 0, 4, 1, 4, 5, // bottom
-        2, 3, 7, 2, 7, 6, // top
-    };
-
-    char *vertexShaderSource = readTextFile("assets/shaders/cube.v.glsl");
-    char *fragmentShaderSource = readTextFile("assets/shaders/cube.f.glsl");
-
-    //=============================================================================================
-    // Create GL resources
-    //=============================================================================================
-
-    GLuint vertexShader = compileShader(GL_VERTEX_SHADER, "vertex shader", vertexShaderSource);
-    GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, "fragment shader", fragmentShaderSource);
-    GLuint program = linkShaderProgram(vertexShader, fragmentShader);
-    GLuint uniformProjection = oglGetUniformLocation(program, "uniProjection");
-    GLuint uniformModelTransform = oglGetUniformLocation(program, "uniModelTransform");
-
-    GLuint vao;
-    oglGenVertexArrays(1, &vao);
-    oglBindVertexArray(vao);
-    oglEnableVertexAttribArray(0);
-    oglEnableVertexAttribArray(1);
-
-    GLuint vertexBuffer;
-    oglGenBuffers(1, &vertexBuffer);
-    oglBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    oglBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
-
-    GLuint indexBuffer;
-    oglGenBuffers(1, &indexBuffer);
-    oglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-    oglBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexData), indexData, GL_STATIC_DRAW);
-    
-    // Specify vertex layout:
-    oglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(BasicVertex), (void*)offsetof(BasicVertex, position));
-    oglVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(BasicVertex), (void*)offsetof(BasicVertex, color));
-
-    //=============================================================================================
-    // Main loop
-    //=============================================================================================
-
-    float angle = 0;
 
     for (;;)
     {
@@ -409,24 +320,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        angle += FRAME_TIME;
-        angle = fmodf(angle, 2 * PI);
-
-        oglClearColor(0.5f, 0.5f, 1.0f, 0.0f);
-        oglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        oglUseProgram(program);
-
-        Matrix4 projection = matrixPerspective(0.1f, 60.0f * TO_RADIANS);
-        Matrix4 modelTransform = matrixMultiply(
-            matrixMultiply(
-                matrixRotationX(angle),
-                matrixRotationY(2 * angle)),
-            matrixTranslationF(0, 0, -6));
-
-        oglUniformMatrix4fv(uniformProjection, 1, GL_TRUE, projection.e);
-        oglUniformMatrix4fv(uniformModelTransform, 1, GL_TRUE, modelTransform.e);
-        oglDrawElements(GL_TRIANGLES, COUNTOF(indexData), GL_UNSIGNED_SHORT, 0);
+        screensaverCube();
 
         SDL_GL_SwapWindow(window);
     }
