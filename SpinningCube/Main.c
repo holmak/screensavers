@@ -3,7 +3,6 @@
 
 #pragma comment(lib, "SDL2main")
 #pragma comment(lib, "SDL2")
-#pragma comment(lib, "opengl32")
 
 static FILE *GLLog;
 
@@ -69,28 +68,28 @@ void printShaderLog(
 
 GLuint compileShader(GLenum type, char *label, const char *source)
 {
-    GLuint shader = oglCreateShader(type);
-    oglShaderSource(shader, 1, &source, NULL);
-    oglCompileShader(shader);
-    printShaderLog(shader, label, oglGetShaderiv, GL_COMPILE_STATUS, oglGetShaderInfoLog);
+    GLuint shader = glCreateShader(type);
+    glShaderSource(shader, 1, &source, NULL);
+    glCompileShader(shader);
+    printShaderLog(shader, label, glGetShaderiv, GL_COMPILE_STATUS, glGetShaderInfoLog);
     return shader;
 }
 
 GLuint linkShaderProgram(GLuint vertexShader, GLuint fragmentShader)
 {
-    GLuint program = oglCreateProgram();
-    oglAttachShader(program, vertexShader);
-    oglAttachShader(program, fragmentShader);
-    oglLinkProgram(program);
-    printShaderLog(program, "program", oglGetProgramiv, GL_LINK_STATUS, oglGetProgramInfoLog);
+    GLuint program = glCreateProgram();
+    glAttachShader(program, vertexShader);
+    glAttachShader(program, fragmentShader);
+    glLinkProgram(program);
+    printShaderLog(program, "program", glGetProgramiv, GL_LINK_STATUS, glGetProgramInfoLog);
 
-    oglValidateProgram(program);
-    printShaderLog(program, "program validation", oglGetProgramiv, GL_VALIDATE_STATUS, oglGetProgramInfoLog);
+    glValidateProgram(program);
+    printShaderLog(program, "program validation", glGetProgramiv, GL_VALIDATE_STATUS, glGetProgramInfoLog);
 
-    oglDetachShader(program, vertexShader);
-    oglDeleteShader(vertexShader);
-    oglDetachShader(program, fragmentShader);
-    oglDeleteShader(fragmentShader);
+    glDetachShader(program, vertexShader);
+    glDeleteShader(vertexShader);
+    glDetachShader(program, fragmentShader);
+    glDeleteShader(fragmentShader);
 
     return program;
 }
@@ -300,14 +299,14 @@ int main(int argc, char *argv[])
 
     if (DEBUG_GRAPHICS)
     {
-        oglEnable(GL_DEBUG_OUTPUT);
-        oglEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        oglDebugMessageCallback(onGLDebugMessage, NULL);
-        oglDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(onGLDebugMessage, NULL);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
     }
 
-    oglEnable(GL_DEPTH_TEST);
-    oglDepthFunc(GL_LEQUAL);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
 
     for (;;)
     {
