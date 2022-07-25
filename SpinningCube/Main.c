@@ -242,15 +242,20 @@ Matrix4 matrixRotationZ(float radians)
     return m;
 }
 
-Matrix4 matrixScaleUniform(float s)
+Matrix4 matrixScaleF(float x, float y, float z)
 {
     Matrix4 m = {
-        s, 0, 0, 0,
-        0, s, 0, 0,
-        0, 0, s, 0,
+        x, 0, 0, 0,
+        0, y, 0, 0,
+        0, 0, z, 0,
         0, 0, 0, 1,
     };
     return m;
+}
+
+Matrix4 matrixScaleUniform(float s)
+{
+    return matrixScaleF(s, s, s);
 }
 
 //=============================================================================================

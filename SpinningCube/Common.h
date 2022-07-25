@@ -90,6 +90,8 @@ Matrix4 matrixRotationY(float radians);
 
 Matrix4 matrixRotationZ(float radians);
 
+Matrix4 matrixScaleF(float x, float y, float z);
+
 Matrix4 matrixScaleUniform(float s);
 
 //=============================================================================================
