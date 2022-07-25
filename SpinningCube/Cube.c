@@ -102,7 +102,9 @@ void screensaverCube()
     // Set up projection:
     glUseProgram(g.program);
     Matrix4 projectionAndView = matrixMultiply(
-        matrixTranslationF(0, -2, -8),
+        matrixMultiply(
+            matrixRotationX(15 * TO_RADIANS),
+            matrixTranslationF(0, -2, -8)),
         matrixPerspective(0.1f, 90.0f * TO_RADIANS));
     glUniformMatrix4fv(g.uniformProjection, 1, GL_TRUE, projectionAndView.e);
 
@@ -118,7 +120,7 @@ void screensaverCube()
 
     // Draw plane:
     Matrix4 modelTransform = matrixMultiply(
-        matrixScaleUniform(4),
+        matrixScaleUniform(2),
         matrixTranslationF(0, 0, 0));
     glUniformMatrix4fv(g.uniformModelTransform, 1, GL_TRUE, modelTransform.e);
     glBindVertexArray(g.plane.vao);
