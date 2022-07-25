@@ -41,6 +41,12 @@ typedef struct BasicVertex
     PackedColor color;
 } BasicVertex;
 
+typedef struct Mesh
+{
+    GLuint vao, vertexBuffer, indexBuffer;
+    size_t primitiveCount;
+} Mesh;
+
 //=============================================================================================
 // Basics
 //=============================================================================================
@@ -57,11 +63,22 @@ char *readTextFile(char *path);
 
 GLuint compileShaderProgram(char *vertexShaderSource, char *fragmentShaderSource);
 
-Matrix4 matrixMultiply(Matrix4 left, Matrix4 right);
+void createMesh(Mesh *mesh);
+
+void setMeshData(
+    Mesh *mesh,
+    size_t vertexCount, BasicVertex *vertexData,
+    size_t indexCount, uint16_t *indexData);
+
+//=============================================================================================
+// Matrices
+//=============================================================================================
 
 Matrix4 matrixPixelPerfect();
 
 Matrix4 matrixPerspective(float near, float fov);
+
+Matrix4 matrixMultiply(Matrix4 left, Matrix4 right);
 
 Matrix4 matrixTranslation(Vector3 v);
 

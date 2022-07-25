@@ -1,5 +1,6 @@
 #include "Common.h"
 #include <stdio.h>
+#include <string.h>
 
 #pragma comment(lib, "SDL2main")
 #pragma comment(lib, "SDL2")
@@ -100,6 +101,44 @@ GLuint compileShaderProgram(char *vertexShaderSource, char *fragmentShaderSource
     GLuint fs = compileShader(GL_FRAGMENT_SHADER, "fragment shader", fragmentShaderSource);
     return linkShaderProgram(vs, fs);
 }
+
+void createMesh(Mesh *mesh)
+{
+    memset(mesh, 0, sizeof(*mesh));
+
+    glGenVertexArrays(1, &mesh->vao);
+    glBindVertexArray(mesh->vao);
+
+    glGenBuffers(1, &mesh->vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->vertexBuffer);
+
+    glGenBuffers(1, &mesh->indexBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->indexBuffer);
+
+    // Vertex layout:
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(BasicVertex), (void*)offsetof(BasicVertex, position));
+    glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(BasicVertex), (void*)offsetof(BasicVertex, color));
+
+    mesh->primitiveCount = 0;
+}
+
+void setMeshData(
+    Mesh *mesh,
+    size_t vertexCount, BasicVertex *vertexData,
+    size_t indexCount, uint16_t *indexData)
+{
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(vertexData[0]), vertexData, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(indexData[0]), indexData, GL_STATIC_DRAW);
+    mesh->primitiveCount = indexCount;
+}
+
+//=============================================================================================
+// Matrices (4x4)
+//=============================================================================================
 
 float *matrixElement(Matrix4 *matrix, int row, int column)
 {
