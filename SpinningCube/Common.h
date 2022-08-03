@@ -99,3 +99,5 @@ Matrix4 matrixScaleUniform(float s);
 //=============================================================================================
 
 void screensaverCube();
+
+void screensaverCheckers();

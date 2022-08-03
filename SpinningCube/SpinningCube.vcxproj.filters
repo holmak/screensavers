@@ -24,6 +24,9 @@
     <ClCompile Include="Cube.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Checkers.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GL.h">

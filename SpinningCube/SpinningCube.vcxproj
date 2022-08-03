@@ -90,6 +90,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Checkers.c" />
     <ClCompile Include="Cube.c" />
     <ClCompile Include="GL.c" />
     <ClCompile Include="Main.c" />

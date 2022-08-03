@@ -363,7 +363,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        screensaverCube();
+        screensaverCheckers();
 
         SDL_GL_SwapWindow(window);
     }
