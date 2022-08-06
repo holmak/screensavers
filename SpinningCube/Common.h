@@ -2,7 +2,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "SDL/SDL.h"
+#include <SDL2/SDL.h>
 #include "GL.h"
 
 #define WINDOW_WIDTH 1920
