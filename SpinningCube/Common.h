@@ -80,6 +80,8 @@ Matrix4 matrixPerspective(float near, float fov);
 
 Matrix4 matrixMultiply(Matrix4 left, Matrix4 right);
 
+void matrixConcat(Matrix4 *left, Matrix4 right);
+
 Matrix4 matrixTranslation(Vector3 v);
 
 Matrix4 matrixTranslationF(float x, float y, float z);

@@ -103,19 +103,15 @@ void screensaverCheckers()
 
     // Set up projection:
     glUseProgram(g.program);
-    Matrix4 projectionAndView = matrixMultiply(
-        matrixMultiply(
-            matrixMultiply(
-                matrixRotationY(g.angle),
-                matrixRotationX(45 * TO_RADIANS)),
-            matrixTranslationF(0, -2, -15)),
-        matrixPerspective(0.1f, 90.0f * TO_RADIANS));
+    Matrix4 projectionAndView = matrixRotationY(g.angle);
+    matrixConcat(&projectionAndView, matrixRotationX(45 * TO_RADIANS));
+    matrixConcat(&projectionAndView, matrixTranslationF(0, -2, -15));
+    matrixConcat(&projectionAndView, matrixPerspective(0.1f, 90.0f * TO_RADIANS));
     glUniformMatrix4fv(g.uniformProjection, 1, GL_TRUE, projectionAndView.e);
 
     // Draw cube:
-    Matrix4 cubeTransform = matrixMultiply(
-        matrixScaleF(0.4f, 0.05f, 0.4f),
-        matrixTranslationF(0, 0.05f, 0));
+    Matrix4 cubeTransform = matrixScaleF(0.4f, 0.05f, 0.4f);
+    matrixConcat(&cubeTransform, matrixTranslationF(0, 0.05f, 0));
     glUniformMatrix4fv(g.uniformModelTransform, 1, GL_TRUE, cubeTransform.e);
     glBindVertexArray(g.cube.vao);
     glDrawElements(GL_TRIANGLES, (GLsizei)g.cube.primitiveCount, GL_UNSIGNED_SHORT, 0);
@@ -134,9 +130,8 @@ void screensaverCheckers()
             float red[] = { 1, w, w, 1 };
             float black[] = { w, w, w, 1 };
 
-            Matrix4 modelTransform = matrixMultiply(
-                matrixScaleUniform(0.5f),
-                matrixTranslationF(gx - BOARD_SIZE / 2 + 0.5f, 0, gy - BOARD_SIZE / 2 + 0.5f));
+            Matrix4 modelTransform = matrixScaleUniform(0.5f);
+            matrixConcat(&modelTransform, matrixTranslationF(gx - BOARD_SIZE / 2 + 0.5f, 0, gy - BOARD_SIZE / 2 + 0.5f));
             glUniformMatrix4fv(g.uniformModelTransform, 1, GL_TRUE, modelTransform.e);
             glUniform4fv(g.uniformModelColor, 1, isRed ? red : black);
             glDrawElements(GL_TRIANGLES, (GLsizei)g.plane.primitiveCount, GL_UNSIGNED_SHORT, 0);
@@ -147,9 +142,7 @@ void screensaverCheckers()
 
     // Draw reflected cube:
     glStencilFunc(GL_NOTEQUAL, 0x00, 0xFF);
-    cubeTransform = matrixMultiply(
-        cubeTransform,
-        matrixScaleF(1, -1, 1));
+    matrixConcat(&cubeTransform, matrixScaleF(1, -1, 1));
     glUniformMatrix4fv(g.uniformModelTransform, 1, GL_TRUE, cubeTransform.e);
     glUniform4f(g.uniformModelColor, 0.3f, 0.3f, 0.3f, 1.0f);
     glBindVertexArray(g.cube.vao);

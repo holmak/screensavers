@@ -163,6 +163,11 @@ Matrix4 matrixMultiply(Matrix4 left, Matrix4 right)
     return m;
 }
 
+void matrixConcat(Matrix4 *left, Matrix4 right)
+{
+    *left = matrixMultiply(*left, right);
+}
+
 Matrix4 matrixPixelPerfect()
 {
     Matrix4 m = {
