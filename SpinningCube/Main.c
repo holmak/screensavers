@@ -11,10 +11,11 @@ static FILE *GLLog;
 // Basics
 //=============================================================================================
 
-void check(bool condition)
+void check(bool condition, char *message)
 {
     if (!condition)
     {
+        fprintf(stderr, "error: %s\n", message);
         exit(1);
     }
 }
@@ -22,19 +23,23 @@ void check(bool condition)
 void *xalloc(size_t size)
 {
     void *p = calloc(1, size);
-    check(p != NULL);
+    check(p != NULL, "xalloc");
     return p;
 }
 
 char *readTextFile(char *path)
 {
     FILE *f = fopen(path, "rb");
-    check(fseek(f, 0, SEEK_END) == 0);
+    if (fseek(f, 0, SEEK_END) != 0)
+    {
+        fprintf(stderr, "error: cannot read file: %s\n", path);
+        exit(1);
+    }
     long len = ftell(f);
-    check(len >= 0);
-    check(fseek(f, 0, SEEK_SET) == 0);
+    check(len >= 0, "ftell");
+    check(fseek(f, 0, SEEK_SET) == 0, "fseek");
     char *text = xalloc(len + 1);
-    check(fread(text, len, 1, f) == 1);
+    check(fread(text, len, 1, f) == 1, "fread");
     text[len] = '\0';
     return text;
 }
@@ -64,7 +69,7 @@ void printShaderLog(
     }
 
     fflush(GLLog);
-    check(success);
+    check(success, "compiling shader/program");
 }
 
 GLuint compileShader(GLenum type, char *label, const char *source)
@@ -330,7 +335,7 @@ int main(int argc, char *argv[])
     UNUSED(argc);
     UNUSED(argv);
 
-    check(SDL_Init(SDL_INIT_EVERYTHING) == 0);
+    check(SDL_Init(SDL_INIT_EVERYTHING) == 0, "SDL_Init");
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
@@ -343,7 +348,7 @@ int main(int argc, char *argv[])
     if (DEBUG_GRAPHICS)
     {
         GLLog = fopen("gl.log", "w");
-        check(GLLog);
+        check(GLLog, "fopen(log)");
 
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
     }
@@ -352,12 +357,12 @@ int main(int argc, char *argv[])
         "Screensaver",
         SDL_WINDOWPOS_CENTERED_DISPLAY(1), SDL_WINDOWPOS_CENTERED_DISPLAY(1),
         WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP);
-    check(window != NULL);
+    check(window != NULL, "SDL_CreateWindow");
 
     SDL_GLContext context = SDL_GL_CreateContext(window);
-    check(context != 0);
+    check(context != 0, "SDL_GL_CreateContext");
     LoadGL();
-    check(SDL_GL_SetSwapInterval(-1) == 0);
+    check(SDL_GL_SetSwapInterval(1) == 0, "SDL_GL_SetSwapInterval");
 
     if (DEBUG_GRAPHICS)
     {

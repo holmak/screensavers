@@ -58,7 +58,7 @@ typedef struct Mesh
 // Basics
 //=============================================================================================
 
-void check(bool condition);
+void check(bool condition, char *message);
 
 void *xalloc(size_t size);
 
