@@ -110,6 +110,12 @@ static void start()
     //=============================================================================================
 
     g.angle = 0;
+
+    //=============================================================================================
+    // GL state
+    //=============================================================================================
+
+    glDisable(GL_STENCIL_TEST);
 }
 
 void screensaverCheckers()
@@ -124,12 +130,8 @@ void screensaverCheckers()
     g.angle = fmodf(g.angle, 2 * PI);
 
     glClearColor(0.5f, 0.5f, 1.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glEnable(GL_STENCIL_TEST);
-    glStencilFunc(GL_ALWAYS, 0x00, 0x00);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-    glStencilMask(0xFF);
     glUniform4f(g.uniformModelColor, 1, 1, 1, 1);
 
     // Set up projection:
@@ -149,9 +151,6 @@ void screensaverCheckers()
 
     // Draw board:
     glBindVertexArray(g.plane.vao);
-    glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    glDepthMask(GL_FALSE);
     for (int gy = 0; gy < BOARD_SIZE; gy++)
     {
         for (int gx = 0; gx < BOARD_SIZE; gx++)
@@ -168,14 +167,4 @@ void screensaverCheckers()
             glDrawElements(GL_TRIANGLES, (GLsizei)g.plane.primitiveCount, GL_UNSIGNED_SHORT, 0);
         }
     }
-    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-    glDepthMask(GL_TRUE);
-
-    // Draw reflected cube:
-    glStencilFunc(GL_NOTEQUAL, 0x00, 0xFF);
-    matrixConcat(&cubeTransform, matrixScaleF(1, -1, 1));
-    glUniformMatrix4fv(g.uniformModelTransform, 1, GL_TRUE, cubeTransform.e);
-    glUniform4f(g.uniformModelColor, 1, 1, 1, 0.3f);
-    glBindVertexArray(g.cylinder.vao);
-    glDrawElements(GL_TRIANGLES, (GLsizei)g.cylinder.primitiveCount, GL_UNSIGNED_SHORT, 0);
 }
