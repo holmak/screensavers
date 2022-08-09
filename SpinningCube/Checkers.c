@@ -1,6 +1,7 @@
 #include "Common.h"
 
 #define BOARD_SIZE 8
+#define CYLINDER_FACETS 12
 
 static struct checkersGlobals
 {
@@ -11,7 +12,7 @@ static struct checkersGlobals
     GLuint uniformModelTransform;
     GLuint uniformModelColor;
 
-    Mesh cube, plane;
+    Mesh cube, plane, cylinder;
 
     float angle;
 } g;
@@ -57,6 +58,34 @@ static void start()
         0, 1, 3, 0, 3, 2,
     };
 
+    BasicVertex cylinderVertices[2 * CYLINDER_FACETS];
+    uint16_t cylinderIndices[9 * CYLINDER_FACETS];
+    for (uint16_t i = 0; i < CYLINDER_FACETS; i++)
+    {
+        uint16_t v = 2 * i;
+        int tri = 9 * i;
+
+        float theta = 2 * PI * ((float)i / CYLINDER_FACETS);
+        Vector3 spoke = matrixTransformPoint(matrixRotationY(theta), (Vector3) { 1, 0, 0 });
+        cylinderVertices[v + 0] = (BasicVertex){ spoke, { 0xFF, 0xFF, 0xFF, 0xFF } };
+        spoke.y = 0.5f;
+        cylinderVertices[v + 1] = (BasicVertex){ spoke, { 0xFF, 0xFF, 0xFF, 0xFF } };
+
+        // Side triangles:
+        uint16_t end = COUNTOF(cylinderVertices);
+        cylinderIndices[tri + 0] = (v) % end;
+        cylinderIndices[tri + 1] = (v + 1) % end;
+        cylinderIndices[tri + 2] = (v + 3) % end;
+        cylinderIndices[tri + 3] = (v) % end;
+        cylinderIndices[tri + 4] = (v + 3) % end;
+        cylinderIndices[tri + 5] = (v + 2) % end;
+
+        // Top triangles:
+        cylinderIndices[tri + 6] = 1;
+        cylinderIndices[tri + 7] = (v + 3) % end;
+        cylinderIndices[tri + 8] = v + 1;
+    }
+
     char* vertexShaderSource = readTextFile("assets/shaders/cube.v.glsl");
     char* fragmentShaderSource = readTextFile("assets/shaders/cube.f.glsl");
 
@@ -73,6 +102,8 @@ static void start()
     setMeshData(&g.cube, COUNTOF(cubeVertices), cubeVertices, COUNTOF(cubeIndices), cubeIndices);
     createMesh(&g.plane);
     setMeshData(&g.plane, COUNTOF(planeVertices), planeVertices, COUNTOF(planeIndices), planeIndices);
+    createMesh(&g.cylinder);
+    setMeshData(&g.cylinder, COUNTOF(cylinderVertices), cylinderVertices, COUNTOF(cylinderIndices), cylinderIndices);
 
     //=============================================================================================
     // Program state
@@ -105,16 +136,16 @@ void screensaverCheckers()
     glUseProgram(g.program);
     Matrix4 projectionAndView = matrixRotationY(g.angle);
     matrixConcat(&projectionAndView, matrixRotationX(45 * TO_RADIANS));
-    matrixConcat(&projectionAndView, matrixTranslationF(0, -2, -15));
+    matrixConcat(&projectionAndView, matrixTranslationF(0, -1, -5));
     matrixConcat(&projectionAndView, matrixPerspective(0.1f, 90.0f * TO_RADIANS));
     glUniformMatrix4fv(g.uniformProjection, 1, GL_TRUE, projectionAndView.e);
 
-    // Draw cube:
-    Matrix4 cubeTransform = matrixScaleF(0.4f, 0.05f, 0.4f);
+    // Draw piece:
+    Matrix4 cubeTransform = matrixScaleUniform(0.45f);
     matrixConcat(&cubeTransform, matrixTranslationF(0, 0.05f, 0));
     glUniformMatrix4fv(g.uniformModelTransform, 1, GL_TRUE, cubeTransform.e);
-    glBindVertexArray(g.cube.vao);
-    glDrawElements(GL_TRIANGLES, (GLsizei)g.cube.primitiveCount, GL_UNSIGNED_SHORT, 0);
+    glBindVertexArray(g.cylinder.vao);
+    glDrawElements(GL_TRIANGLES, (GLsizei)g.cylinder.primitiveCount, GL_UNSIGNED_SHORT, 0);
 
     // Draw board:
     glBindVertexArray(g.plane.vao);
@@ -144,7 +175,7 @@ void screensaverCheckers()
     glStencilFunc(GL_NOTEQUAL, 0x00, 0xFF);
     matrixConcat(&cubeTransform, matrixScaleF(1, -1, 1));
     glUniformMatrix4fv(g.uniformModelTransform, 1, GL_TRUE, cubeTransform.e);
-    glUniform4f(g.uniformModelColor, 0.3f, 0.3f, 0.3f, 1.0f);
-    glBindVertexArray(g.cube.vao);
-    glDrawElements(GL_TRIANGLES, (GLsizei)g.cube.primitiveCount, GL_UNSIGNED_SHORT, 0);
+    glUniform4f(g.uniformModelColor, 1, 1, 1, 0.3f);
+    glBindVertexArray(g.cylinder.vao);
+    glDrawElements(GL_TRIANGLES, (GLsizei)g.cylinder.primitiveCount, GL_UNSIGNED_SHORT, 0);
 }
