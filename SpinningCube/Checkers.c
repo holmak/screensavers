@@ -25,14 +25,14 @@ static void start()
 
     BasicVertex cubeVertices[] =
     {
-        { -1, -1, -1, 0xFF, 0xFF, 0xFF, 0xFF, },
-        { +1, -1, -1, 0xFF, 0xFF, 0xFF, 0xFF, },
-        { -1, +1, -1, 0xFF, 0xFF, 0xFF, 0xFF, },
-        { +1, +1, -1, 0xFF, 0xFF, 0xFF, 0xFF, },
-        { -1, -1, +1, 0xFF, 0xFF, 0xFF, 0xFF, },
-        { +1, -1, +1, 0xFF, 0xFF, 0xFF, 0xFF, },
-        { -1, +1, +1, 0xFF, 0xFF, 0xFF, 0xFF, },
-        { +1, +1, +1, 0xFF, 0xFF, 0xFF, 0xFF, },
+        { { -1, -1, -1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
+        { { +1, -1, -1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
+        { { -1, +1, -1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
+        { { +1, +1, -1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
+        { { -1, -1, +1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
+        { { +1, -1, +1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
+        { { -1, +1, +1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
+        { { +1, +1, +1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
     };
 
     uint16_t cubeIndices[] =
@@ -47,10 +47,10 @@ static void start()
 
     BasicVertex planeVertices[] =
     {
-        { -1, 0, -1, 0xFF, 0xFF, 0xFF, 0xFF, },
-        { +1, 0, -1, 0xFF, 0xFF, 0xFF, 0xFF, },
-        { -1, 0, +1, 0xFF, 0xFF, 0xFF, 0xFF, },
-        { +1, 0, +1, 0xFF, 0xFF, 0xFF, 0xFF, },
+        { { -1, 0, -1 }, 0, { 0, 1, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
+        { { +1, 0, -1 }, 0, { 0, 1, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
+        { { -1, 0, +1 }, 0, { 0, 1, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
+        { { +1, 0, +1 }, 0, { 0, 1, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
     };
 
     uint16_t planeIndices[] =
@@ -66,10 +66,12 @@ static void start()
         int tri = 9 * i;
 
         float theta = 2 * PI * ((float)i / CYLINDER_FACETS);
-        Vector3 spoke = matrixTransformPoint(matrixRotationY(theta), (Vector3) { 1, 0, 0 });
-        cylinderVertices[v + 0] = (BasicVertex){ spoke, { 0xFF, 0xFF, 0xFF, 0xFF } };
+        Matrix4 rotateY = matrixRotationY(theta);
+        Vector3 spoke = matrixTransformPoint(rotateY, (Vector3) { 1, 0, 0 });
+        Vector3 normal = matrixTransformPoint(rotateY, (Vector3) { 0, 0, 1 });
+        cylinderVertices[v + 0] = (BasicVertex){ spoke, 0, normal, { 0xFF, 0xFF, 0xFF, 0xFF } };
         spoke.y = 0.5f;
-        cylinderVertices[v + 1] = (BasicVertex){ spoke, { 0xFF, 0xFF, 0xFF, 0xFF } };
+        cylinderVertices[v + 1] = (BasicVertex){ spoke, 0, normal, { 0xFF, 0xFF, 0xFF, 0xFF } };
 
         // Side triangles:
         uint16_t end = COUNTOF(cylinderVertices);

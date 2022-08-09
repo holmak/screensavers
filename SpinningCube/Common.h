@@ -20,6 +20,11 @@ typedef struct Vector3
     float x, y, z;
 } Vector3;
 
+typedef struct Vector4
+{
+    float x, y, z, w;
+} Vector4;
+
 typedef struct Matrix4
 {
     float e[16];
@@ -38,6 +43,8 @@ typedef struct PackedColor
 typedef struct BasicVertex
 {
     Vector3 position;
+    float padding;
+    Vector3 normal;
     PackedColor color;
 } BasicVertex;
 
