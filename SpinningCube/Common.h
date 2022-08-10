@@ -5,8 +5,8 @@
 #include <SDL2/SDL.h>
 #include "GL.h"
 
-#define WINDOW_WIDTH 1920
-#define WINDOW_HEIGHT 1080
+#define WINDOW_WIDTH 1024
+#define WINDOW_HEIGHT 768
 #define DEBUG_GRAPHICS true
 
 #define PI ((float)M_PI)

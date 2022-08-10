@@ -353,10 +353,29 @@ int main(int argc, char *argv[])
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
     }
 
+    int displayCount = SDL_GetNumVideoDisplays();
+    check(displayCount >= 1, "SDL_GetNumVideoDisplays");
+
+    int display = (displayCount >= 2) ? 1 : 0;
+    SDL_DisplayMode mode;
+    check(SDL_GetDesktopDisplayMode(display, &mode) == 0, "SDL_GetDesktopDisplayMode");
+    
+    int flags = SDL_WINDOW_OPENGL;
+
+    if (mode.w < WINDOW_WIDTH || mode.h < WINDOW_HEIGHT)
+    {
+        fprintf(stderr, "error: minimum resolution is %d by %d\n", WINDOW_WIDTH, WINDOW_HEIGHT);
+        exit(1);
+    }
+    else if (mode.w == WINDOW_WIDTH && mode.h == WINDOW_HEIGHT)
+    {
+        flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    }
+
     SDL_Window *window = SDL_CreateWindow(
         "Screensaver",
-        SDL_WINDOWPOS_CENTERED_DISPLAY(1), SDL_WINDOWPOS_CENTERED_DISPLAY(1),
-        WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP);
+        SDL_WINDOWPOS_CENTERED_DISPLAY(display), SDL_WINDOWPOS_CENTERED_DISPLAY(display),
+        WINDOW_WIDTH, WINDOW_HEIGHT, flags);
     check(window != NULL, "SDL_CreateWindow");
 
     SDL_GLContext context = SDL_GL_CreateContext(window);
