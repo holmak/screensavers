@@ -89,7 +89,7 @@ void screensaverCube()
 		g.started = true;
 	}
 
-    g.angle += FRAME_TIME;
+    g.angle += FRAME_TIME * 0.1f;
     g.angle = fmodf(g.angle, 2 * PI);
 
     glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
