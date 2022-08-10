@@ -10,11 +10,22 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\checkers.c" />
+    <ClCompile Include="..\cube.c" />
+    <ClCompile Include="..\GL.c" />
+    <ClCompile Include="..\main.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\common.h" />
+    <ClInclude Include="..\GL.h" />
+    <ClInclude Include="..\khrplatform.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{e0f436a3-ef07-4eff-9bf6-6cbacce98332}</ProjectGuid>
-    <RootNamespace>SpinningCube</RootNamespace>
+    <RootNamespace>Screensavers</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -27,7 +38,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -44,12 +55,14 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)External\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)External\lib\$(Platform);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)..\External\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\External\lib\$(Platform);$(LibraryPath)</LibraryPath>
+    <TargetName>screensavers</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)External\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)External\lib\$(Platform);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)..\External\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\External\lib\$(Platform);$(LibraryPath)</LibraryPath>
+    <TargetName>screensavers</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -64,7 +77,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /dfy $(SolutionDir)External\lib\$(Platform)\SDL2.dll $(OutDir)
+      <Command>xcopy /dfy $(SolutionDir)..\External\lib\$(Platform)\SDL2.dll $(OutDir)
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -85,21 +98,10 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /dfy $(SolutionDir)External\lib\$(Platform)\SDL2.dll $(OutDir)
+      <Command>xcopy /dfy $(SolutionDir)..\External\lib\$(Platform)\SDL2.dll $(OutDir)
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Checkers.c" />
-    <ClCompile Include="Cube.c" />
-    <ClCompile Include="GL.c" />
-    <ClCompile Include="Main.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Common.h" />
-    <ClInclude Include="GL.h" />
-    <ClInclude Include="khrplatform.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

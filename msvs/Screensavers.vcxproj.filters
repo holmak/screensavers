@@ -15,27 +15,27 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Main.c">
+    <ClCompile Include="..\GL.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GL.c">
+    <ClCompile Include="..\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Cube.c">
+    <ClCompile Include="..\checkers.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Checkers.c">
+    <ClCompile Include="..\cube.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GL.h">
+    <ClInclude Include="..\common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="khrplatform.h">
+    <ClInclude Include="..\GL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Common.h">
+    <ClInclude Include="..\khrplatform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

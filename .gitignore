@@ -1,5 +1,4 @@
-/.vs/
-**/x64/Debug/
-**/x64/Release/
+/msvs/.vs/
+/msvs/x64/
 *.vcxproj.user
 gl.log
