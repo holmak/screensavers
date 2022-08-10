@@ -8,6 +8,7 @@ static struct cubeGlobals
     GLuint uniformProjection;
     GLuint uniformModelTransform;
     GLuint uniformModelColor;
+    GLuint uniformAmbientLight;
 
     Mesh cube, plane;
 
@@ -22,13 +23,13 @@ static void start()
 
     BasicVertex cubeVertices[] =
     {
-        { { -1, -1, -1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
-        { { +1, -1, -1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
-        { { -1, +1, -1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
-        { { +1, +1, -1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
-        { { -1, -1, +1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
-        { { +1, -1, +1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
-        { { -1, +1, +1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
+        { { -1, -1, -1 }, 0, { 0, 0, 0 }, { 0x00, 0x00, 0x00, 0xFF } },
+        { { +1, -1, -1 }, 0, { 0, 0, 0 }, { 0xFF, 0x00, 0x00, 0xFF } },
+        { { -1, +1, -1 }, 0, { 0, 0, 0 }, { 0x00, 0xFF, 0x00, 0xFF } },
+        { { +1, +1, -1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0x00, 0xFF } },
+        { { -1, -1, +1 }, 0, { 0, 0, 0 }, { 0x00, 0x00, 0xFF, 0xFF } },
+        { { +1, -1, +1 }, 0, { 0, 0, 0 }, { 0xFF, 0x00, 0xFF, 0xFF } },
+        { { -1, +1, +1 }, 0, { 0, 0, 0 }, { 0x00, 0xFF, 0xFF, 0xFF } },
         { { +1, +1, +1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
     };
 
@@ -66,6 +67,7 @@ static void start()
     g.uniformProjection = glGetUniformLocation(g.program, "uniProjection");
     g.uniformModelTransform = glGetUniformLocation(g.program, "uniModelTransform");
     g.uniformModelColor = glGetUniformLocation(g.program, "uniModelColor");
+    g.uniformAmbientLight = glGetUniformLocation(g.program, "uniAmbientLight");
 
     createMesh(&g.cube);
     setMeshData(&g.cube, COUNTOF(cubeVertices), cubeVertices, COUNTOF(cubeIndices), cubeIndices);
@@ -90,7 +92,7 @@ void screensaverCube()
     g.angle += FRAME_TIME;
     g.angle = fmodf(g.angle, 2 * PI);
 
-    glClearColor(0.5f, 0.5f, 1.0f, 0.0f);
+    glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     glEnable(GL_STENCIL_TEST);
@@ -98,13 +100,14 @@ void screensaverCube()
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
     glStencilMask(0xFF);
     glUniform4f(g.uniformModelColor, 1, 1, 1, 1);
+    glUniform1f(g.uniformAmbientLight, 1.0f);
 
     // Set up projection:
     glUseProgram(g.program);
     Matrix4 projectionAndView = matrixMultiply(
         matrixMultiply(
             matrixRotationX(15 * TO_RADIANS),
-            matrixTranslationF(0, -2, -8)),
+            matrixTranslationF(0, -2, -6)),
         matrixPerspective(0.1f, 90.0f * TO_RADIANS));
     glUniformMatrix4fv(g.uniformProjection, 1, GL_TRUE, projectionAndView.e);
 
@@ -123,6 +126,7 @@ void screensaverCube()
         matrixScaleUniform(2),
         matrixTranslationF(0, 0, 0));
     glUniformMatrix4fv(g.uniformModelTransform, 1, GL_TRUE, modelTransform.e);
+    glUniform4f(g.uniformModelColor, 0, 0, 0, 1);
     glBindVertexArray(g.plane.vao);
     glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
