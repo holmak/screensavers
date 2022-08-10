@@ -377,6 +377,7 @@ int main(int argc, char *argv[])
         SDL_WINDOWPOS_CENTERED_DISPLAY(display), SDL_WINDOWPOS_CENTERED_DISPLAY(display),
         WINDOW_WIDTH, WINDOW_HEIGHT, flags);
     check(window != NULL, "SDL_CreateWindow");
+    SDL_ShowCursor(SDL_DISABLE);
 
     SDL_GLContext context = SDL_GL_CreateContext(window);
     check(context != 0, "SDL_GL_CreateContext");
