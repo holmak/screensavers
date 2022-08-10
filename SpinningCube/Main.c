@@ -382,7 +382,10 @@ int main(int argc, char *argv[])
     SDL_GLContext context = SDL_GL_CreateContext(window);
     check(context != 0, "SDL_GL_CreateContext");
     LoadGL();
-    check(SDL_GL_SetSwapInterval(1) == 0, "SDL_GL_SetSwapInterval");
+    if (SDL_GL_SetSwapInterval(1) != 0)
+    {
+        fprintf(stderr, "warning: cannot set GL swap interval\n");
+    }
 
     if (DEBUG_GRAPHICS)
     {
