@@ -59,34 +59,39 @@ static void start()
         0, 1, 3, 0, 3, 2,
     };
 
-    BasicVertex cylinderVertices[2 * CYLINDER_FACETS];
+    BasicVertex cylinderVertices[3 * CYLINDER_FACETS];
     uint16_t cylinderIndices[9 * CYLINDER_FACETS];
     for (uint16_t i = 0; i < CYLINDER_FACETS; i++)
     {
-        uint16_t v = 2 * i;
+        uint16_t v = 3 * i;
         int tri = 9 * i;
 
         float theta = 2 * PI * ((float)i / CYLINDER_FACETS);
         Matrix4 rotateY = matrixRotationY(theta);
         Vector3 spoke = matrixTransformPoint(rotateY, (Vector3) { 1, 0, 0 });
         Vector3 normal = matrixTransformPoint(rotateY, (Vector3) { 0, 0, 1 });
-        cylinderVertices[v + 0] = (BasicVertex){ spoke, 0, normal, { 0xFF, 0xFF, 0xFF, 0xFF } };
-        spoke.y = 0.5f;
-        cylinderVertices[v + 1] = (BasicVertex){ spoke, 0, normal, { 0xFF, 0xFF, 0xFF, 0xFF } };
+        BasicVertex bottom = { spoke, 0, normal, { 0xFF, 0xFF, 0xFF, 0xFF } };
+        BasicVertex top = bottom;
+        top.position.y = 0.5f;
+        BasicVertex topFlat = top;
+        topFlat.normal = (Vector3){ 0, 1, 0 };
+        cylinderVertices[v + 0] = bottom;
+        cylinderVertices[v + 1] = top;
+        cylinderVertices[v + 2] = topFlat;
 
         // Side triangles:
         uint16_t end = COUNTOF(cylinderVertices);
         cylinderIndices[tri + 0] = (v) % end;
         cylinderIndices[tri + 1] = (v + 1) % end;
-        cylinderIndices[tri + 2] = (v + 3) % end;
+        cylinderIndices[tri + 2] = (v + 4) % end;
         cylinderIndices[tri + 3] = (v) % end;
-        cylinderIndices[tri + 4] = (v + 3) % end;
-        cylinderIndices[tri + 5] = (v + 2) % end;
+        cylinderIndices[tri + 4] = (v + 4) % end;
+        cylinderIndices[tri + 5] = (v + 3) % end;
 
         // Top triangles:
-        cylinderIndices[tri + 6] = 1;
-        cylinderIndices[tri + 7] = (v + 3) % end;
-        cylinderIndices[tri + 8] = v + 1;
+        cylinderIndices[tri + 6] = 2;
+        cylinderIndices[tri + 7] = (v + 5) % end;
+        cylinderIndices[tri + 8] = v + 2;
     }
 
     char* vertexShaderSource = readTextFile("assets/shaders/cube.v.glsl");
