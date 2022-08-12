@@ -11,6 +11,7 @@ static struct checkersGlobals
     GLuint uniformProjection;
     GLuint uniformModelTransform;
     GLuint uniformModelColor;
+    GLuint uniformAmbientLight;
 
     Mesh cube, plane, cylinder;
 
@@ -99,6 +100,7 @@ static void start()
     g.uniformProjection = glGetUniformLocation(g.program, "uniProjection");
     g.uniformModelTransform = glGetUniformLocation(g.program, "uniModelTransform");
     g.uniformModelColor = glGetUniformLocation(g.program, "uniModelColor");
+    g.uniformAmbientLight = glGetUniformLocation(g.program, "uniAmbientLight");
 
     createMesh(&g.cube);
     setMeshData(&g.cube, COUNTOF(cubeVertices), cubeVertices, COUNTOF(cubeIndices), cubeIndices);
@@ -131,10 +133,11 @@ void screensaverCheckers()
     g.angle += FRAME_TIME * 0.1f;
     g.angle = fmodf(g.angle, 2 * PI);
 
-    glClearColor(0.5f, 0.5f, 1.0f, 0.0f);
+    glClearColor(0.7f, 0.7f, 0.7f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glUniform4f(g.uniformModelColor, 1, 1, 1, 1);
+    glUniform1f(g.uniformAmbientLight, 0.5f);
 
     // Set up projection:
     glUseProgram(g.program);
