@@ -1,7 +1,13 @@
 #include "Common.h"
 
 #define BOARD_SIZE 8
-#define CYLINDER_FACETS 12
+#define CYLINDER_FACETS 20
+#define CYLINDER_RADIUS 0.4f
+#define CYLINDER_HEIGHT 0.15f
+
+#define PIECE_NONE 0
+#define PIECE_RED 1
+#define PIECE_BLACK 2
 
 static struct checkersGlobals
 {
@@ -16,7 +22,13 @@ static struct checkersGlobals
     Mesh cube, plane, cylinder;
 
     float angle;
+    char board[BOARD_SIZE][BOARD_SIZE];
 } g;
+
+static bool isPlayable(int x, int y)
+{
+    return (x ^ y) & 1;
+}
 
 static void start()
 {
@@ -68,11 +80,11 @@ static void start()
 
         float theta = 2 * PI * ((float)i / CYLINDER_FACETS);
         Matrix4 rotateY = matrixRotationY(theta);
-        Vector3 spoke = matrixTransformPoint(rotateY, (Vector3) { 1, 0, 0 });
+        Vector3 spoke = matrixTransformPoint(rotateY, (Vector3) { CYLINDER_RADIUS, 0, 0 });
         Vector3 normal = matrixTransformPoint(rotateY, (Vector3) { 0, 0, 1 });
         BasicVertex bottom = { spoke, 0, normal, { 0xFF, 0xFF, 0xFF, 0xFF } };
         BasicVertex top = bottom;
-        top.position.y = 0.5f;
+        top.position.y = CYLINDER_HEIGHT;
         BasicVertex topFlat = top;
         topFlat.normal = (Vector3){ 0, 1, 0 };
         cylinderVertices[v + 0] = bottom;
@@ -125,6 +137,24 @@ static void start()
     //=============================================================================================
 
     glDisable(GL_STENCIL_TEST);
+
+    for (int by = 0; by < BOARD_SIZE; by++)
+    {
+        for (int bx = 0; bx < BOARD_SIZE; bx++)
+        {
+            if (isPlayable(bx, by))
+            {
+                if (by < 3)
+                {
+                    g.board[bx][by] = PIECE_RED;
+                }
+                else if (by >= 5)
+                {
+                    g.board[bx][by] = PIECE_BLACK;
+                }
+            }
+        }
+    }
 }
 
 void screensaverCheckers()
@@ -135,7 +165,7 @@ void screensaverCheckers()
         g.started = true;
     }
 
-    g.angle += FRAME_TIME * 0.1f;
+    g.angle += FRAME_TIME * 0.02f;
     g.angle = fmodf(g.angle, 2 * PI);
 
     glClearColor(0.7f, 0.7f, 0.7f, 0.0f);
@@ -148,16 +178,28 @@ void screensaverCheckers()
     glUseProgram(g.program);
     Matrix4 projectionAndView = matrixRotationY(g.angle);
     matrixConcat(&projectionAndView, matrixRotationX(45 * TO_RADIANS));
-    matrixConcat(&projectionAndView, matrixTranslationF(0, -1, -5));
+    matrixConcat(&projectionAndView, matrixTranslationF(0, -1, -8));
     matrixConcat(&projectionAndView, matrixPerspective(0.1f, 90.0f * TO_RADIANS));
     glUniformMatrix4fv(g.uniformProjection, 1, GL_TRUE, projectionAndView.e);
 
-    // Draw piece:
-    Matrix4 cubeTransform = matrixScaleUniform(0.45f);
-    matrixConcat(&cubeTransform, matrixTranslationF(0, 0.05f, 0));
-    glUniformMatrix4fv(g.uniformModelTransform, 1, GL_TRUE, cubeTransform.e);
-    glBindVertexArray(g.cylinder.vao);
-    glDrawElements(GL_TRIANGLES, (GLsizei)g.cylinder.primitiveCount, GL_UNSIGNED_SHORT, 0);
+    Color redPiece = { 1, 0, 0, 1 };
+    Color blackPiece = { 0, 0, 0, 1 };
+
+    for (int by = 0; by < BOARD_SIZE; by++)
+    {
+        for (int bx = 0; bx < BOARD_SIZE; bx++)
+        {
+            char piece = g.board[bx][by];
+            if (piece != PIECE_NONE)
+            {
+                Matrix4 transform = matrixTranslationF((float)bx - 3.5f, 0, (float)by - 3.5f);
+                glUniformMatrix4fv(g.uniformModelTransform, 1, GL_TRUE, transform.e);
+                glUniform4fv(g.uniformModelColor, 1, piece == PIECE_RED ? &redPiece.r : &blackPiece.r);
+                glBindVertexArray(g.cylinder.vao);
+                glDrawElements(GL_TRIANGLES, (GLsizei)g.cylinder.primitiveCount, GL_UNSIGNED_SHORT, 0);
+            }
+        }
+    }
 
     // Draw board:
     glBindVertexArray(g.plane.vao);
@@ -165,15 +207,14 @@ void screensaverCheckers()
     {
         for (int gx = 0; gx < BOARD_SIZE; gx++)
         {
-            bool isRed = (gx ^ gy) & 1;
-            float w = 0.1f;
+            float w = 0.3f;
             float red[] = { 1, w, w, 1 };
             float black[] = { w, w, w, 1 };
 
             Matrix4 modelTransform = matrixScaleUniform(0.5f);
             matrixConcat(&modelTransform, matrixTranslationF(gx - BOARD_SIZE / 2 + 0.5f, 0, gy - BOARD_SIZE / 2 + 0.5f));
             glUniformMatrix4fv(g.uniformModelTransform, 1, GL_TRUE, modelTransform.e);
-            glUniform4fv(g.uniformModelColor, 1, isRed ? red : black);
+            glUniform4fv(g.uniformModelColor, 1, isPlayable(gx, gy) ? black : red);
             glDrawElements(GL_TRIANGLES, (GLsizei)g.plane.primitiveCount, GL_UNSIGNED_SHORT, 0);
         }
     }
