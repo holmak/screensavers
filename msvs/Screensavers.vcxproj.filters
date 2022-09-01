@@ -30,6 +30,9 @@
     <ClCompile Include="..\trench.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\common.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common.h">
