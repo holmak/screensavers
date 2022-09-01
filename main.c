@@ -5,6 +5,8 @@
 #pragma comment(lib, "SDL2main")
 #pragma comment(lib, "SDL2")
 
+void screensaver();
+
 FILE *GLLog;
 
 void onGLDebugMessage(GLenum source, GLenum type, unsigned id, GLenum severity,
@@ -132,7 +134,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        screensaverTrench();
+        screensaver();
 
         SDL_GL_SwapWindow(window);
     }

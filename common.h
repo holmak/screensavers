@@ -112,13 +112,3 @@ Matrix4 matrixScaleF(float x, float y, float z);
 Matrix4 matrixScaleUniform(float s);
 
 Vector3 matrixTransformPoint(Matrix4 transform, Vector3 point);
-
-//=============================================================================================
-// Modes
-//=============================================================================================
-
-void screensaverCube();
-
-void screensaverCheckers();
-
-void screensaverTrench();

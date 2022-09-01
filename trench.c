@@ -116,7 +116,7 @@ static void start()
     glLineWidth(3.0f);
 }
 
-void screensaverTrench()
+void screensaver()
 {
     if (!g.started)
     {

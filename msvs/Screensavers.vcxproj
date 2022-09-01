@@ -11,9 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\checkers.c" />
     <ClCompile Include="..\common.c" />
-    <ClCompile Include="..\cube.c" />
     <ClCompile Include="..\GL.c" />
     <ClCompile Include="..\main.c" />
     <ClCompile Include="..\trench.c" />
