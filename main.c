@@ -140,7 +140,24 @@ void setMeshData(
     glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(vertexData[0]), vertexData, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->indexBuffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(indexData[0]), indexData, GL_STATIC_DRAW);
-    mesh->primitiveCount = indexCount;
+    mesh->primitiveCount = indexCount; // TODO: Divide by 2 or 3?
+}
+
+//=============================================================================================
+// Math
+//=============================================================================================
+
+float lerp(float a, float b, float t)
+{
+    return a + (b - a) * t;
+}
+
+Vector3 vector3Scale(Vector3 v, float scale)
+{
+    v.x *= scale;
+    v.y *= scale;
+    v.z *= scale;
+    return v;
 }
 
 //=============================================================================================
@@ -410,7 +427,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        screensaverCheckers();
+        screensaverTrench();
 
         SDL_GL_SwapWindow(window);
     }

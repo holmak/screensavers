@@ -78,6 +78,14 @@ void setMeshData(
     size_t indexCount, uint16_t *indexData);
 
 //=============================================================================================
+// Math
+//=============================================================================================
+
+float lerp(float a, float b, float t);
+
+Vector3 vector3Scale(Vector3 v, float scale);
+
+//=============================================================================================
 // Matrices
 //=============================================================================================
 
@@ -112,3 +120,5 @@ Vector3 matrixTransformPoint(Matrix4 transform, Vector3 point);
 void screensaverCube();
 
 void screensaverCheckers();
+
+void screensaverTrench();

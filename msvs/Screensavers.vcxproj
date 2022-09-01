@@ -15,6 +15,7 @@
     <ClCompile Include="..\cube.c" />
     <ClCompile Include="..\GL.c" />
     <ClCompile Include="..\main.c" />
+    <ClCompile Include="..\trench.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common.h" />
