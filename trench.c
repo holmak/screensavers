@@ -1,4 +1,5 @@
 #include "Common.h"
+#include <string.h>
 
 #define BOX_SIZE (WINDOW_HEIGHT - 80)
 #define BOX_BORDER 4
@@ -18,10 +19,43 @@ static struct trenchGlobals
     GLuint uniformModelColor;
     GLuint uniformAmbientLight;
 
-    Mesh cube, station;
+    Mesh station;
 
     float segmentTime;
 } g;
+
+static struct meshBuilder
+{
+    uint16_t vertexCount;
+    int indexCount;
+    BasicVertex vertices[1000];
+    uint16_t indices[1000];
+} meshBuilder;
+
+static void appendVertex(BasicVertex v)
+{
+    struct meshBuilder *mb = &meshBuilder;
+    check(mb->vertexCount < COUNTOF(mb->vertices), "mesh vertex overflow");
+    check(mb->indexCount < COUNTOF(mb->indices), "mesh index overflow");
+    mb->indices[mb->indexCount++] = mb->vertexCount;
+    mb->vertices[mb->vertexCount++] = v;
+}
+
+static void appendLine(Vector3 a, Vector3 b)
+{
+    BasicVertex v = { a, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } };
+    appendVertex(v);
+    v.position = b;
+    appendVertex(v);
+}
+
+static void finishMesh(Mesh *mesh)
+{
+    struct meshBuilder *mb = &meshBuilder;
+    createMesh(mesh);
+    setMeshData(mesh, mb->vertexCount, mb->vertices, mb->indexCount, mb->indices);
+    memset(mb, 0, sizeof(*mb));
+}
 
 void clear(float* color)
 {
@@ -32,56 +66,18 @@ void clear(float* color)
 static void start()
 {
     //=============================================================================================
-    // Data
+    // Construct meshes
     //=============================================================================================
 
-    BasicVertex cubeVertices[] =
+    for (uint16_t i = 0; i < STATION_FACETS; i++)
     {
-        { { -1, -1, -1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
-        { { +1, -1, -1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
-        { { -1, +1, -1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
-        { { +1, +1, -1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
-        { { -1, -1, +1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
-        { { +1, -1, +1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
-        { { -1, +1, +1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
-        { { +1, +1, +1 }, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } },
-    };
-
-    uint16_t cubeIndices[] =
-    {
-        0, 1, 3, 0, 3, 2, // front
-        1, 5, 7, 1, 7, 3, // right
-        5, 4, 6, 5, 6, 7, // back
-        4, 0, 2, 4, 2, 6, // left
-        1, 0, 4, 1, 4, 5, // bottom
-        2, 3, 7, 2, 7, 6, // top
-    };
-
-    BasicVertex stationVertices[1000];
-    uint16_t stationIndices[1000];
-    int stationIndexCount;
-    {
-        uint16_t vert = 0;
-        int indx = 0;
-
-        for (uint16_t i = 0; i < STATION_FACETS; i++)
-        {
-            float theta = 2 * PI * ((float)i / STATION_FACETS);
-            Matrix4 rotateY = matrixRotationY(theta);
-            Vector3 spoke = matrixTransformPoint(rotateY, (Vector3) { 1, 0, 0 });
-            Vector3 normal = matrixTransformPoint(rotateY, (Vector3) { 0, 0, 1 });
-            BasicVertex vertex = { spoke, 0, normal, { 0xFF, 0xFF, 0xFF, 0xFF } };
-            stationIndices[indx++] = vert;
-            stationVertices[vert++] = vertex;
-            vertex.position = vector3Scale(vertex.position, 0.95f);
-            stationIndices[indx++] = vert;
-            stationVertices[vert++] = vertex;
-        }
-
-        check(vert <= COUNTOF(stationVertices), "overflow");
-        check(indx <= COUNTOF(stationIndices), "overflow");
-        stationIndexCount = indx;
+        float theta = 2 * PI * ((float)i / STATION_FACETS);
+        Matrix4 rotateY = matrixRotationY(theta);
+        Vector3 spoke = matrixTransformPoint(rotateY, (Vector3) { 1, 0, 0 });
+        appendLine(spoke, vector3Scale(spoke, 0.95f));
     }
+
+    finishMesh(&g.station);
 
     char* vertexShaderSource = readTextFile("assets/shaders/cube.v.glsl");
     char* fragmentShaderSource = readTextFile("assets/shaders/cube.f.glsl");
@@ -95,11 +91,6 @@ static void start()
     g.uniformModelTransform = glGetUniformLocation(g.program, "uniModelTransform");
     g.uniformModelColor = glGetUniformLocation(g.program, "uniModelColor");
     g.uniformAmbientLight = glGetUniformLocation(g.program, "uniAmbientLight");
-
-    createMesh(&g.station);
-    setMeshData(&g.station, COUNTOF(stationVertices), stationVertices, stationIndexCount, stationIndices);
-    createMesh(&g.cube);
-    setMeshData(&g.cube, COUNTOF(cubeVertices), cubeVertices, COUNTOF(cubeIndices), cubeIndices);
 
     //=============================================================================================
     // Program state
