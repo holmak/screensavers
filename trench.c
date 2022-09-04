@@ -61,6 +61,13 @@ static void finishMesh(Mesh *mesh)
     memset(mb, 0, sizeof(*mb));
 }
 
+Vector3 spherePoint(float longitude, float latitude, float radius)
+{
+    Matrix4 transform = matrixRotationZ(latitude);
+    matrixConcat(&transform, matrixRotationY(longitude));
+    return matrixTransformPoint(transform, (Vector3){ radius, 0, 0 });
+}
+
 void clear(float* color)
 {
     glClearColor(color[0], color[1], color[2], color[3]);
@@ -76,16 +83,13 @@ static void start()
     for (int j = 1; j < STATION_FACETS / 3; j++)
     {
         float latitude = ((float)j / (STATION_FACETS / 3)) * PI / 2;
-        Matrix4 rotateNorth = matrixRotationZ(latitude);
-        Matrix4 rotateSouth = matrixRotationZ(-latitude);
 
         for (int i = 0; i < STATION_FACETS; i++)
         {
             float offset = ((j % 2) == 1) ? 0.5f : 0.0f;
             float longitude = ((float)(i + offset) / STATION_FACETS) * 2 * PI;
-            Matrix4 rotateY = matrixRotationY(longitude);
-            appendPoint(matrixTransformPoint(matrixMultiply(rotateNorth, rotateY), (Vector3) { 1, 0, 0 }));
-            appendPoint(matrixTransformPoint(matrixMultiply(rotateSouth, rotateY), (Vector3) { 1, 0, 0 }));
+            appendPoint(spherePoint(longitude, latitude, 1.0f));
+            appendPoint(spherePoint(longitude, -latitude, 1.0f));
         }
     }
 
@@ -95,9 +99,7 @@ static void start()
     {
         float longitudeA = ((float)i / STATION_FACETS) * 2 * PI;
         float longitudeB = ((float)(i + 1) / STATION_FACETS) * 2 * PI;
-        Vector3 a = matrixTransformPoint(matrixRotationY(longitudeA), (Vector3) { 1, 0, 0 });
-        Vector3 b = matrixTransformPoint(matrixRotationY(longitudeB), (Vector3) { 1, 0, 0 });
-        appendLine(a, b);
+        appendLine(spherePoint(longitudeA, 0, 1.0f), spherePoint(longitudeB, 0, 1.0f));
     }
 
     finishMesh(&g.lines);
