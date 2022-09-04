@@ -37,6 +37,7 @@ char *readTextFile(char *path)
     check(fseek(f, 0, SEEK_SET) == 0, "fseek");
     char *text = xalloc(len + 1);
     check(fread(text, len, 1, f) == 1, "fread");
+    fclose(f);
     text[len] = '\0';
     return text;
 }
