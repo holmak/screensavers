@@ -3,7 +3,7 @@
 
 #define BOX_SIZE (WINDOW_HEIGHT - 80)
 #define BOX_BORDER 4
-#define STATION_FACETS 16
+#define STATION_FACETS 30
 #define ANIMATION_RATE 0.02f
 
 static float LIGHT[] = { 0.75f, 0.9f, 0.9f, 1.0f };
@@ -19,7 +19,7 @@ static struct trenchGlobals
     GLuint uniformModelColor;
     GLuint uniformAmbientLight;
 
-    Mesh station;
+    Mesh points, lines;
 
     float segmentTime;
 } g;
@@ -28,8 +28,8 @@ static struct meshBuilder
 {
     uint16_t vertexCount;
     int indexCount;
-    BasicVertex vertices[1000];
-    uint16_t indices[1000];
+    BasicVertex vertices[4000];
+    uint16_t indices[4000];
 } meshBuilder;
 
 static void appendVertex(BasicVertex v)
@@ -41,12 +41,16 @@ static void appendVertex(BasicVertex v)
     mb->vertices[mb->vertexCount++] = v;
 }
 
+static void appendPoint(Vector3 p)
+{
+    BasicVertex v = { p, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } };
+    appendVertex(v);
+}
+
 static void appendLine(Vector3 a, Vector3 b)
 {
-    BasicVertex v = { a, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } };
-    appendVertex(v);
-    v.position = b;
-    appendVertex(v);
+    appendPoint(a);
+    appendPoint(b);
 }
 
 static void finishMesh(Mesh *mesh)
@@ -69,15 +73,34 @@ static void start()
     // Construct meshes
     //=============================================================================================
 
-    for (uint16_t i = 0; i < STATION_FACETS; i++)
+    for (int j = 1; j < STATION_FACETS / 3; j++)
     {
-        float theta = 2 * PI * ((float)i / STATION_FACETS);
-        Matrix4 rotateY = matrixRotationY(theta);
-        Vector3 spoke = matrixTransformPoint(rotateY, (Vector3) { 1, 0, 0 });
-        appendLine(spoke, vector3Scale(spoke, 0.95f));
+        float latitude = ((float)j / (STATION_FACETS / 3)) * PI / 2;
+        Matrix4 rotateNorth = matrixRotationZ(latitude);
+        Matrix4 rotateSouth = matrixRotationZ(-latitude);
+
+        for (int i = 0; i < STATION_FACETS; i++)
+        {
+            float offset = ((j % 2) == 1) ? 0.5f : 0.0f;
+            float longitude = ((float)(i + offset) / STATION_FACETS) * 2 * PI;
+            Matrix4 rotateY = matrixRotationY(longitude);
+            appendPoint(matrixTransformPoint(matrixMultiply(rotateNorth, rotateY), (Vector3) { 1, 0, 0 }));
+            appendPoint(matrixTransformPoint(matrixMultiply(rotateSouth, rotateY), (Vector3) { 1, 0, 0 }));
+        }
     }
 
-    finishMesh(&g.station);
+    finishMesh(&g.points);
+
+    for (int i = 0; i < STATION_FACETS; i++)
+    {
+        float longitudeA = ((float)i / STATION_FACETS) * 2 * PI;
+        float longitudeB = ((float)(i + 1) / STATION_FACETS) * 2 * PI;
+        Vector3 a = matrixTransformPoint(matrixRotationY(longitudeA), (Vector3) { 1, 0, 0 });
+        Vector3 b = matrixTransformPoint(matrixRotationY(longitudeB), (Vector3) { 1, 0, 0 });
+        appendLine(a, b);
+    }
+
+    finishMesh(&g.lines);
 
     char* vertexShaderSource = readTextFile("assets/shaders/cube.v.glsl");
     char* fragmentShaderSource = readTextFile("assets/shaders/cube.f.glsl");
@@ -103,8 +126,8 @@ static void start()
     //=============================================================================================
 
     glDisable(GL_DEPTH_TEST);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glLineWidth(3.0f);
+    glPointSize(3.0f);
 }
 
 void screensaver()
@@ -122,6 +145,7 @@ void screensaver()
         int bx = (WINDOW_WIDTH - BOX_SIZE) / 2;
         int by = (WINDOW_HEIGHT - BOX_SIZE) / 2;
 
+        glDisable(GL_SCISSOR_TEST);
         clear(DARK);
 
         glEnable(GL_SCISSOR_TEST);
@@ -146,8 +170,10 @@ void screensaver()
     glUniformMatrix4fv(g.uniformProjection, 1, GL_TRUE, projectionAndView.e);
 
     // Draw sphere:
-    glBindVertexArray(g.station.vao);
     Matrix4 modelTransform = matrixScaleUniform(1.0f);
     glUniformMatrix4fv(g.uniformModelTransform, 1, GL_TRUE, modelTransform.e);
-    glDrawElements(GL_LINES, (GLsizei)g.station.primitiveCount, GL_UNSIGNED_SHORT, 0);
+    glBindVertexArray(g.points.vao);
+    glDrawElements(GL_POINTS, (GLsizei)g.points.primitiveCount, GL_UNSIGNED_SHORT, 0);
+    glBindVertexArray(g.lines.vao);
+    glDrawElements(GL_LINES, (GLsizei)g.lines.primitiveCount, GL_UNSIGNED_SHORT, 0);
 }
