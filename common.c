@@ -289,7 +289,7 @@ Vector3 matrixTransformPoint(Matrix4 transform, Vector3 point)
     float *m = transform.e;
     Vector3 p = point;
     Vector3 result;
-    result.x = m[0] * p.x + m[1] * p.y + m[2] * p.z + m[4];
+    result.x = m[0] * p.x + m[1] * p.y + m[2] * p.z + m[3];
     result.y = m[4] * p.x + m[5] * p.y + m[6] * p.z + m[7];
     result.z = m[8] * p.x + m[9] * p.y + m[10] * p.z + m[11];
     return result;
