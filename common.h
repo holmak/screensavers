@@ -40,13 +40,11 @@ typedef struct PackedColor
     uint8_t r, g, b, a;
 } PackedColor;
 
-typedef struct BasicVertex
+typedef struct PointVertex
 {
     Vector3 position;
     float padding;
-    Vector3 normal;
-    PackedColor color;
-} BasicVertex;
+} PointVertex;
 
 typedef struct Mesh
 {
@@ -74,7 +72,7 @@ void createMesh(Mesh *mesh);
 
 void setMeshData(
     Mesh *mesh,
-    size_t vertexCount, BasicVertex *vertexData,
+    size_t vertexCount, PointVertex *vertexData,
     size_t indexCount, uint16_t *indexData);
 
 //=============================================================================================

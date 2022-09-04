@@ -14,10 +14,9 @@ static struct trenchGlobals
     bool started;
 
     GLuint program;
-    GLuint uniformProjection;
-    GLuint uniformModelTransform;
-    GLuint uniformModelColor;
-    GLuint uniformAmbientLight;
+    GLuint uProjection;
+    GLuint uModelTransform;
+    GLuint uColor;
 
     Mesh points, lines;
 
@@ -28,11 +27,11 @@ static struct meshBuilder
 {
     uint16_t vertexCount;
     int indexCount;
-    BasicVertex vertices[4000];
+    PointVertex vertices[4000];
     uint16_t indices[4000];
 } meshBuilder;
 
-static void appendVertex(BasicVertex v)
+static void appendVertex(PointVertex v)
 {
     struct meshBuilder *mb = &meshBuilder;
     check(mb->vertexCount < COUNTOF(mb->vertices), "mesh vertex overflow");
@@ -43,7 +42,7 @@ static void appendVertex(BasicVertex v)
 
 static void appendPoint(Vector3 p)
 {
-    BasicVertex v = { p, 0, { 0, 0, 0 }, { 0xFF, 0xFF, 0xFF, 0xFF } };
+    PointVertex v = { p, 1 };
     appendVertex(v);
 }
 
@@ -108,13 +107,12 @@ static void start()
     // GL resources
     //=============================================================================================
 
-    char *vertexShaderSource = readTextFile("assets/shaders/cube.v.glsl");
-    char *fragmentShaderSource = readTextFile("assets/shaders/cube.f.glsl");
+    char *vertexShaderSource = readTextFile("assets/shaders/point.v.glsl");
+    char *fragmentShaderSource = readTextFile("assets/shaders/point.f.glsl");
     g.program = compileShaderProgram(vertexShaderSource, fragmentShaderSource);
-    g.uniformProjection = glGetUniformLocation(g.program, "uniProjection");
-    g.uniformModelTransform = glGetUniformLocation(g.program, "uniModelTransform");
-    g.uniformModelColor = glGetUniformLocation(g.program, "uniModelColor");
-    g.uniformAmbientLight = glGetUniformLocation(g.program, "uniAmbientLight");
+    g.uProjection = glGetUniformLocation(g.program, "uProjection");
+    g.uModelTransform = glGetUniformLocation(g.program, "uModelTransform");
+    g.uColor = glGetUniformLocation(g.program, "uColor");
 
     //=============================================================================================
     // Program state
@@ -157,8 +155,7 @@ void screensaver()
         clear(DARK);
     }
 
-    glUniform4fv(g.uniformModelColor, 1, LIGHT);
-    glUniform1f(g.uniformAmbientLight, 1.0f);
+    glUniform4fv(g.uColor, 1, LIGHT);
 
     // Set up projection:
     glUseProgram(g.program);
@@ -168,11 +165,11 @@ void screensaver()
     matrixConcat(&projectionAndView, matrixRotationX(angleX));
     matrixConcat(&projectionAndView, matrixTranslationF(0, 0, -3));
     matrixConcat(&projectionAndView, matrixPerspective(0.1f, 90.0f * TO_RADIANS));
-    glUniformMatrix4fv(g.uniformProjection, 1, GL_TRUE, projectionAndView.e);
+    glUniformMatrix4fv(g.uProjection, 1, GL_TRUE, projectionAndView.e);
 
     // Draw sphere:
     Matrix4 modelTransform = matrixScaleUniform(1.0f);
-    glUniformMatrix4fv(g.uniformModelTransform, 1, GL_TRUE, modelTransform.e);
+    glUniformMatrix4fv(g.uModelTransform, 1, GL_TRUE, modelTransform.e);
     glBindVertexArray(g.points.vao);
     glDrawElements(GL_POINTS, (GLsizei)g.points.primitiveCount, GL_UNSIGNED_SHORT, 0);
     glBindVertexArray(g.lines.vao);

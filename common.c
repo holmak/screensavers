@@ -137,18 +137,14 @@ void createMesh(Mesh *mesh)
 
     // Vertex layout:
     glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(BasicVertex), (void*)offsetof(BasicVertex, position));
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(BasicVertex), (void*)offsetof(BasicVertex, normal));
-    glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(BasicVertex), (void*)offsetof(BasicVertex, color));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(PointVertex), (void*)offsetof(PointVertex, position));
 
     mesh->primitiveCount = 0;
 }
 
 void setMeshData(
     Mesh *mesh,
-    size_t vertexCount, BasicVertex *vertexData,
+    size_t vertexCount, PointVertex *vertexData,
     size_t indexCount, uint16_t *indexData)
 {
     glBindBuffer(GL_ARRAY_BUFFER, mesh->vertexBuffer);
