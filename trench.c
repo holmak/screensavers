@@ -104,13 +104,12 @@ static void start()
 
     finishMesh(&g.lines);
 
-    char* vertexShaderSource = readTextFile("assets/shaders/cube.v.glsl");
-    char* fragmentShaderSource = readTextFile("assets/shaders/cube.f.glsl");
-
     //=============================================================================================
     // GL resources
     //=============================================================================================
 
+    char *vertexShaderSource = readTextFile("assets/shaders/cube.v.glsl");
+    char *fragmentShaderSource = readTextFile("assets/shaders/cube.f.glsl");
     g.program = compileShaderProgram(vertexShaderSource, fragmentShaderSource);
     g.uniformProjection = glGetUniformLocation(g.program, "uniProjection");
     g.uniformModelTransform = glGetUniformLocation(g.program, "uniModelTransform");
