@@ -83,6 +83,12 @@ float lerp(float a, float b, float t);
 
 Vector3 vector3Scale(Vector3 v, float scale);
 
+Vector3 vector3RotateX(Vector3 v, float angle);
+
+Vector3 vector3RotateY(Vector3 v, float angle);
+
+Vector3 vector3RotateZ(Vector3 v, float angle);
+
 //=============================================================================================
 // Matrices
 //=============================================================================================

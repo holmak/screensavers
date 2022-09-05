@@ -4,7 +4,10 @@
 #define BOX_SIZE (WINDOW_HEIGHT - 80)
 #define BOX_BORDER 4
 #define STATION_FACETS 30
-#define ANIMATION_RATE 0.02f
+#define CRATER_FACETS 16
+#define CRATER_ANGLE_OUTER 23
+#define CRATER_ANGLE_INNER 15
+#define ANIMATION_RATE 0.04f
 
 static float LIGHT[] = { 0.75f, 0.9f, 0.9f, 1.0f };
 static float DARK[] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -101,6 +104,17 @@ static void start()
         appendLine(spherePoint(longitudeA, 0, 1.0f), spherePoint(longitudeB, 0, 1.0f));
     }
 
+    for (int i = 0; i < CRATER_FACETS; i++)
+    {
+        Vector3 p0 = { 1, 0, 0 };
+        p0 = vector3RotateY(p0, CRATER_ANGLE_OUTER * TO_RADIANS);
+        p0 = vector3RotateX(p0, ((i + 0.5f) / CRATER_FACETS) * 2 * PI);
+        Vector3 p1 = { 0.85f, 0, 0 };
+        p1 = vector3RotateY(p1, CRATER_ANGLE_INNER * TO_RADIANS);
+        p1 = vector3RotateX(p1, ((i + 0.5f) / CRATER_FACETS) * 2 * PI);
+        appendLine(p0, p1);
+    }
+
     finishMesh(&g.lines);
 
     //=============================================================================================
@@ -138,6 +152,7 @@ void screensaver()
     }
 
     g.segmentTime += FRAME_TIME * ANIMATION_RATE;
+    while (g.segmentTime > 1) g.segmentTime -= 1.0f;
 
     // Draw box and constrain scene to it:
     {
@@ -160,11 +175,11 @@ void screensaver()
     // Set up projection:
     glUseProgram(g.program);
     float angleX = lerp(0, PI, g.segmentTime);
-    float angleY = 0;
+    float angleY = 3 * PI / 2;
     Matrix4 projectionAndView = matrixRotationY(angleY);
     matrixConcat(&projectionAndView, matrixRotationX(angleX));
-    matrixConcat(&projectionAndView, matrixTranslationF(0, 0, -3));
-    matrixConcat(&projectionAndView, matrixPerspective(0.1f, 90.0f * TO_RADIANS));
+    matrixConcat(&projectionAndView, matrixTranslationF(0, 0, -11));
+    matrixConcat(&projectionAndView, matrixPerspective(0.1f, 30.0f * TO_RADIANS));
     glUniformMatrix4fv(g.uProjection, 1, GL_TRUE, projectionAndView.e);
 
     // Draw sphere:

@@ -59,6 +59,21 @@ Vector3 vector3Scale(Vector3 v, float scale)
     return v;
 }
 
+Vector3 vector3RotateX(Vector3 v, float angle)
+{
+    return matrixTransformPoint(matrixRotationX(angle), v);
+}
+
+Vector3 vector3RotateY(Vector3 v, float angle)
+{
+    return matrixTransformPoint(matrixRotationY(angle), v);
+}
+
+Vector3 vector3RotateZ(Vector3 v, float angle)
+{
+    return matrixTransformPoint(matrixRotationZ(angle), v);
+}
+
 //=============================================================================================
 // GL
 //=============================================================================================
