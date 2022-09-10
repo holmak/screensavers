@@ -109,9 +109,11 @@ static void start()
         Vector3 p0 = { 1, 0, 0 };
         p0 = vector3RotateY(p0, CRATER_ANGLE_OUTER * TO_RADIANS);
         p0 = vector3RotateX(p0, ((i + 0.5f) / CRATER_FACETS) * 2 * PI);
+        p0 = vector3RotateZ(p0, 30 * TO_RADIANS);
         Vector3 p1 = { 0.85f, 0, 0 };
         p1 = vector3RotateY(p1, CRATER_ANGLE_INNER * TO_RADIANS);
         p1 = vector3RotateX(p1, ((i + 0.5f) / CRATER_FACETS) * 2 * PI);
+        p1 = vector3RotateZ(p1, 30 * TO_RADIANS);
         appendLine(p0, p1);
     }
 
