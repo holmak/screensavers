@@ -51,6 +51,7 @@ void onGLDebugMessage(GLenum source, GLenum type, unsigned id, GLenum severity,
     // Break when a serious error occurs:
     if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
     {
+        check(false, "GL error");
     }
 }
 

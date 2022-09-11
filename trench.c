@@ -236,10 +236,9 @@ void screensaver()
         clear(DARK);
     }
 
-    glUniform4fv(g.uColor, 1, LIGHT);
-
     // Set up projection and camera:
     glUseProgram(g.program);
+    glUniform4fv(g.uColor, 1, LIGHT);
     Matrix4 projectionAndView = matrixIdentity();
     matrixConcat(&projectionAndView, matrixTranslationF(0, 0, -11));
     matrixConcat(&projectionAndView, matrixPerspective(0.1f, 30.0f * TO_RADIANS));
