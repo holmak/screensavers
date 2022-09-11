@@ -188,7 +188,7 @@ void screensaver()
         {
             g.zoomRate = (g.zoomLevel == 0) ? 1 : -1;
         }
-        else if (roll < 85 && g.tiltLevel > -2 && g.tiltLevel < 2)
+        else if (roll < 85)
         {
             g.spinRate = -1;
         }
