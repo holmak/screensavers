@@ -93,6 +93,8 @@ Vector3 vector3RotateZ(Vector3 v, float angle);
 // Matrices
 //=============================================================================================
 
+Matrix4 matrixIdentity();
+
 Matrix4 matrixPixelPerfect();
 
 Matrix4 matrixPerspective(float near, float fov);

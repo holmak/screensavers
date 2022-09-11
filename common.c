@@ -173,6 +173,17 @@ void setMeshData(
 // Matrices (4x4)
 //=============================================================================================
 
+Matrix4 matrixIdentity()
+{
+    Matrix4 m = {
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1,
+    };
+    return m;
+}
+
 float *matrixElement(Matrix4 *matrix, int row, int column)
 {
     return matrix->e + column * 4 + row;

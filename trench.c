@@ -1,5 +1,6 @@
 #include "Common.h"
 #include <string.h>
+#include <stdlib.h>
 
 #define BOX_SIZE (WINDOW_HEIGHT - 80)
 #define BOX_BORDER 4
@@ -7,7 +8,7 @@
 #define CRATER_FACETS 16
 #define CRATER_ANGLE_OUTER 23
 #define CRATER_ANGLE_INNER 15
-#define ANIMATION_RATE 0.04f
+#define ANIMATION_RATE 0.4f
 
 static float LIGHT[] = { 0.75f, 0.9f, 0.9f, 1.0f };
 static float DARK[] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -24,6 +25,8 @@ static struct trenchGlobals
     Mesh points, lines;
 
     float segmentTime;
+    int zoomLevel, spinLevel, tiltLevel;
+    int zoomRate, spinRate, tiltRate;
 } g;
 
 static struct meshBuilder
@@ -78,6 +81,8 @@ void clear(float* color)
 
 static void start()
 {
+    srand(1977);
+
     //=============================================================================================
     // Construct meshes
     //=============================================================================================
@@ -136,6 +141,9 @@ static void start()
 
     g.segmentTime = 0;
 
+    // Begin by zooming in:
+    g.zoomRate = 1;
+
     //=============================================================================================
     // GL state
     //=============================================================================================
@@ -143,6 +151,11 @@ static void start()
     glDisable(GL_DEPTH_TEST);
     glLineWidth(3.0f);
     glPointSize(3.0f);
+}
+
+static int randint(int max)
+{
+    return rand() % max;
 }
 
 void screensaver()
@@ -154,7 +167,41 @@ void screensaver()
     }
 
     g.segmentTime += FRAME_TIME * ANIMATION_RATE;
-    while (g.segmentTime > 1) g.segmentTime -= 1.0f;
+    while (g.segmentTime >= 1.0f)
+    {
+        // Choose a new movement:
+        g.segmentTime = 0;
+
+        g.zoomLevel += g.zoomRate;
+        g.spinLevel = (g.spinLevel + g.spinRate) % 4;
+        g.tiltLevel += g.tiltRate;
+        g.zoomRate = 0;
+        g.spinRate = 0;
+        g.tiltRate = 0;
+        int roll = rand() % 100;
+
+        if (roll < 50)
+        {
+            // (nothing)
+        }
+        else if (roll < 51)
+        {
+            g.zoomRate = (g.zoomLevel == 0) ? 1 : -1;
+        }
+        else if (roll < 85 && g.tiltLevel > -2 && g.tiltLevel < 2)
+        {
+            g.spinRate = -1;
+        }
+        else
+        {
+            int change;
+            if (g.tiltLevel == -2) change = 1;
+            else if (g.tiltLevel == 2) change = -1;
+            else change = (randint(2) == 0) ? -1 : 1;
+
+            g.tiltRate = change;
+        }
+    }
 
     // Draw box and constrain scene to it:
     {
@@ -165,8 +212,13 @@ void screensaver()
         clear(DARK);
 
         glEnable(GL_SCISSOR_TEST);
-        glScissor(bx - BOX_BORDER, by - BOX_BORDER, BOX_SIZE + 2 * BOX_BORDER, BOX_SIZE + 2 * BOX_BORDER);
-        clear(LIGHT);
+
+        // Turn the frame off when zoomed out.
+        if (g.zoomLevel > 0 || g.zoomRate > 0)
+        {
+            glScissor(bx - BOX_BORDER, by - BOX_BORDER, BOX_SIZE + 2 * BOX_BORDER, BOX_SIZE + 2 * BOX_BORDER);
+            clear(LIGHT);
+        }
 
         glScissor(bx, by, BOX_SIZE, BOX_SIZE);
         clear(DARK);
@@ -174,21 +226,26 @@ void screensaver()
 
     glUniform4fv(g.uColor, 1, LIGHT);
 
-    // Set up projection:
+    // Set up projection and camera:
     glUseProgram(g.program);
-    float angleX = lerp(0, PI, g.segmentTime);
-    float angleY = 3 * PI / 2;
-    Matrix4 projectionAndView = matrixRotationY(angleY);
-    matrixConcat(&projectionAndView, matrixRotationX(angleX));
+    Matrix4 projectionAndView = matrixIdentity();
     matrixConcat(&projectionAndView, matrixTranslationF(0, 0, -11));
     matrixConcat(&projectionAndView, matrixPerspective(0.1f, 30.0f * TO_RADIANS));
     glUniformMatrix4fv(g.uProjection, 1, GL_TRUE, projectionAndView.e);
 
     // Draw sphere:
-    Matrix4 modelTransform = matrixScaleUniform(1.0f);
-    glUniformMatrix4fv(g.uModelTransform, 1, GL_TRUE, modelTransform.e);
-    glBindVertexArray(g.points.vao);
-    glDrawElements(GL_POINTS, (GLsizei)g.points.primitiveCount, GL_UNSIGNED_SHORT, 0);
-    glBindVertexArray(g.lines.vao);
-    glDrawElements(GL_LINES, (GLsizei)g.lines.primitiveCount, GL_UNSIGNED_SHORT, 0);
+    float zoom = g.zoomLevel + g.zoomRate * g.segmentTime;
+    float spin = (g.spinLevel + g.spinRate * g.segmentTime) * (90 * TO_RADIANS);
+    float tilt = (g.tiltLevel + g.tiltRate * g.segmentTime) * (40 * TO_RADIANS);
+    if (zoom > 0.01f)
+    {
+        Matrix4 modelTransform = matrixScaleUniform(zoom * zoom);
+        matrixConcat(&modelTransform, matrixRotationY(spin));
+        matrixConcat(&modelTransform, matrixRotationX(tilt));
+        glUniformMatrix4fv(g.uModelTransform, 1, GL_TRUE, modelTransform.e);
+        glBindVertexArray(g.points.vao);
+        glDrawElements(GL_POINTS, (GLsizei)g.points.primitiveCount, GL_UNSIGNED_SHORT, 0);
+        glBindVertexArray(g.lines.vao);
+        glDrawElements(GL_LINES, (GLsizei)g.lines.primitiveCount, GL_UNSIGNED_SHORT, 0);
+    }
 }
