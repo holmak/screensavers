@@ -74,6 +74,11 @@ Vector3 vector3RotateZ(Vector3 v, float angle)
     return matrixTransformPoint(matrixRotationZ(angle), v);
 }
 
+float vector3Dot(Vector3 a, Vector3 b)
+{
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
 //=============================================================================================
 // GL
 //=============================================================================================

@@ -89,6 +89,8 @@ Vector3 vector3RotateY(Vector3 v, float angle);
 
 Vector3 vector3RotateZ(Vector3 v, float angle);
 
+float vector3Dot(Vector3 a, Vector3 b);
+
 //=============================================================================================
 // Matrices
 //=============================================================================================

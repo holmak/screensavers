@@ -6,8 +6,9 @@
 #define BOX_BORDER 4
 #define STATION_FACETS 30
 #define CRATER_FACETS 16
-#define CRATER_ANGLE_OUTER 23
-#define CRATER_ANGLE_INNER 15
+#define CRATER_ANGLE_OUTER (23 * TO_RADIANS)
+#define CRATER_ANGLE_INNER (15 * TO_RADIANS)
+#define CRATER_TILT (30 * TO_RADIANS)
 #define ANIMATION_RATE 0.4f
 
 static float LIGHT[] = { 0.75f, 0.9f, 0.9f, 1.0f };
@@ -87,6 +88,8 @@ static void start()
     // Construct meshes
     //=============================================================================================
 
+    Vector3 craterCenter = vector3RotateZ((Vector3){ 1, 0, 0 }, CRATER_TILT);
+
     for (int j = 1; j < STATION_FACETS / 3; j++)
     {
         float latitude = ((float)j / (STATION_FACETS / 3)) * PI / 2;
@@ -95,7 +98,16 @@ static void start()
         {
             float offset = ((j % 2) == 1) ? 0.5f : 0.0f;
             float longitude = ((float)(i + offset) / STATION_FACETS) * 2 * PI;
-            appendPoint(spherePoint(longitude, latitude, 1.0f));
+            
+            // Don't draw surface-points within the crater.
+            Vector3 p = spherePoint(longitude, latitude, 1.0f);
+            float dot = vector3Dot(p, craterCenter);
+            if (dot < cosf(CRATER_ANGLE_OUTER))
+            {
+                appendPoint(p);
+            }
+
+            // There is no crater in the southern hemisphere, so draw all points.
             appendPoint(spherePoint(longitude, -latitude, 1.0f));
         }
     }
@@ -112,13 +124,13 @@ static void start()
     for (int i = 0; i < CRATER_FACETS; i++)
     {
         Vector3 p0 = { 1, 0, 0 };
-        p0 = vector3RotateY(p0, CRATER_ANGLE_OUTER * TO_RADIANS);
+        p0 = vector3RotateY(p0, CRATER_ANGLE_OUTER);
         p0 = vector3RotateX(p0, ((i + 0.5f) / CRATER_FACETS) * 2 * PI);
-        p0 = vector3RotateZ(p0, 30 * TO_RADIANS);
+        p0 = vector3RotateZ(p0, CRATER_TILT);
         Vector3 p1 = { 0.85f, 0, 0 };
-        p1 = vector3RotateY(p1, CRATER_ANGLE_INNER * TO_RADIANS);
+        p1 = vector3RotateY(p1, CRATER_ANGLE_INNER);
         p1 = vector3RotateX(p1, ((i + 0.5f) / CRATER_FACETS) * 2 * PI);
-        p1 = vector3RotateZ(p1, 30 * TO_RADIANS);
+        p1 = vector3RotateZ(p1, CRATER_TILT);
         appendLine(p0, p1);
     }
 
