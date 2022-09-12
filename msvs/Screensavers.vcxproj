@@ -57,12 +57,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(SolutionDir)..\External\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\External\lib\$(Platform);$(LibraryPath)</LibraryPath>
-    <TargetName>screensavers</TargetName>
+    <TargetName>dschk</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(SolutionDir)..\External\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\External\lib\$(Platform);$(LibraryPath)</LibraryPath>
-    <TargetName>screensavers</TargetName>
+    <TargetName>dschk</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

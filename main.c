@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
     }
 
     SDL_Window *window = SDL_CreateWindow(
-        "ANALYSIS",
+        "dschk",
         SDL_WINDOWPOS_CENTERED_DISPLAY(display), SDL_WINDOWPOS_CENTERED_DISPLAY(display),
         WINDOW_WIDTH, WINDOW_HEIGHT, flags);
     check(window != NULL, "SDL_CreateWindow");
